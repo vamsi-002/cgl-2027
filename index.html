@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Vamsi's CGL 2027 Command Center</title>
+  <meta name="description" content="Dedicated high-performance SSC CGL 2027 preparation cockpit for working aspirant Vamsi." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Tailwind CSS CDN with custom config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            surface: {
+              900: '#090d16',
+              850: '#0f172a',
+              800: '#1e293b',
+              750: '#27354a',
+              700: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars & smooth touch behavior */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-card-accent { background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1px solid rgba(99, 102, 241, 0.2); }
+  </style>
+</head>
+
+<body class="bg-[#070b13] text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP HEADER & OFFICER COCKPIT -->
+  <header class="sticky top-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      
+      <!-- User & Officer Level -->
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 p-[2px] shadow-lg shadow-indigo-500/20">
+            <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-lg" id="rank-badge-icon">
+              🎯
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="font-bold text-base text-white tracking-tight flex items-center gap-1.5">
+                <span>Vamsi</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-medium">CGL 2027</span>
+              </h1>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                🔥 <span id="streak-counter">1</span>d Streak
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 flex items-center gap-1">
+              <span id="rank-title" class="font-medium text-slate-300">CGL Aspirant</span> • <span id="xp-counter">120 XP</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons (Mobile visible) -->
+        <div class="flex items-center space-x-2 md:hidden">
+          <button onclick="toggleMVDMode()" id="mvd-toggle-mobile" class="text-xs px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 active:scale-95 transition">
+            ⚡ MVD
+          </button>
+          <button onclick="openOfficeModal()" class="text-xs px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-medium shadow-sm active:scale-95 transition">
+            💼 Office
+          </button>
+        </div>
+      </div>
+
+      <!-- Center: Date & Day Type Status -->
+      <div class="w-full md:w-auto flex items-center justify-between md:justify-center bg-slate-900/90 px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs">
+        <div class="flex items-center space-x-2">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="calendar-day-label" class="font-medium text-slate-200">Loading Calendar Intelligence...</span>
+        </div>
+        <span id="calendar-day-badge" class="ml-2 px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+          Checking
+        </span>
+      </div>
+
+      <!-- Right: Action Bar (Desktop) -->
+      <div class="hidden md:flex items-center space-x-2.5">
+        <!-- Exhaustion Mode Toggle -->
+        <button onclick="toggleMVDMode()" id="mvd-toggle-btn" class="text-xs px-3 py-1.5 rounded-lg border border-slate-700 hover:border-amber-500/50 bg-slate-800/80 text-slate-300 hover:text-amber-300 transition flex items-center space-x-1.5" title="Minimum Viable Day for tired/overtime days">
+          <span>⚡</span>
+          <span id="mvd-btn-text">Exhaustion Mode (MVD)</span>
+        </button>
+
+        <!-- Office Stealth Mode -->
+        <button onclick="openOfficeModal()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-md shadow-indigo-600/20 active:scale-95 transition flex items-center space-x-1.5">
+          <span>💼</span>
+          <span>Log Office Video</span>
+        </button>
+
+        <!-- Sync & Alarms Menu -->
+        <button onclick="exportCalendarICS()" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition flex items-center space-x-1" title="Sync Phone Alarms via .ICS">
+          <span>🔔</span>
+          <span>Alarms</span>
+        </button>
+        <button onclick="openSyncModal()" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition flex items-center space-x-1" title="Backup or Restore Progress">
+          <span>⚙️</span>
+          <span>Sync</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Officer XP Progress bar -->
+    <div class="max-w-7xl mx-auto mt-2">
+      <div class="w-full bg-slate-800/60 rounded-full h-1.5 overflow-hidden">
+        <div id="rank-progress-bar" class="bg-gradient-to-r from-indigo-500 to-amber-400 h-full rounded-full transition-all duration-500" style="width: 15%"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="bg-[#0b101c] border-b border-slate-800 px-4 sticky top-[68px] z-30">
+    <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-3 overflow-x-auto py-2 no-scrollbar text-xs font-semibold">
+      <button onclick="switchTab('cockpit')" id="tab-btn-cockpit" class="tab-btn px-3.5 py-2 rounded-lg bg-indigo-600 text-white shadow-sm flex items-center space-x-1.5 whitespace-nowrap transition">
+        <span>📅</span>
+        <span>Daily Cockpit</span>
+      </button>
+      <button onclick="switchTab('syllabus')" id="tab-btn-syllabus" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+        <span>📚</span>
+        <span>Syllabus Matrix</span>
+      </button>
+      <button onclick="switchTab('mocks')" id="tab-btn-mocks" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+        <span>📊</span>
+        <span>Testbook Mocks</span>
+      </button>
+      <button onclick="switchTab('mistakes')" id="tab-btn-mistakes" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+        <span>📕</span>
+        <span>Mistake Notebook</span>
+      </button>
+      <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+        <span>📝</span>
+        <span>Office Scratchpad</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 pb-20">
+
+    <!-- TAB 1: DAILY COCKPIT -->
+    <section id="view-cockpit" class="tab-view space-y-6">
+      
+      <!-- Alert Banners: Backlog & MVD Notification -->
+      <div id="cockpit-alerts" class="space-y-3">
+        <!-- Backlog Warning Drawer -->
+        <div id="backlog-banner" class="hidden glass-card rounded-2xl p-4 border-amber-500/30 bg-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">⏳</span>
+            <div>
+              <h3 class="text-sm font-bold text-amber-300">Backlog Rollover Active</h3>
+              <p class="text-xs text-slate-400" id="backlog-count-text">You have 0 carried-forward tasks from previous days.</p>
+            </div>
+          </div>
+          <button onclick="openBacklogDrawer()" class="px-3.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-semibold transition">
+            View & Clear Backlog
+          </button>
+        </div>
+
+        <!-- MVD Active Banner -->
+        <div id="mvd-banner" class="hidden glass-card rounded-2xl p-4 border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">🛡️</span>
+            <div>
+              <h3 class="text-sm font-bold text-emerald-300">Minimum Viable Day (MVD) Activated</h3>
+              <p class="text-xs text-slate-400">Target compressed to 30 mins. Your daily streak is safe. Rest well tonight.</p>
+            </div>
+          </div>
+          <button onclick="toggleMVDMode()" class="text-xs text-emerald-400 underline font-medium">Switch to Full Plan</button>
+        </div>
+      </div>
+
+      <!-- Quick Office Bonus Indicator if logged -->
+      <div id="office-relief-banner" class="hidden glass-card rounded-2xl p-3.5 border-indigo-500/30 bg-indigo-500/5 flex items-center justify-between text-xs">
+        <span class="text-slate-300 flex items-center gap-2">
+          <span>💼</span>
+          <span id="office-relief-text">Logged 1.5h Office Video. Evening slot relieved!</span>
+        </span>
+        <button onclick="openOfficeModal()" class="text-indigo-400 hover:underline">Adjust</button>
+      </div>
+
+      <!-- Today's Schedule Cards -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <span>🎯</span> Today's Mission Blueprint
+          </h2>
+          <span class="text-xs text-slate-400" id="tasks-completion-rate">0 / 5 Completed</span>
+        </div>
+
+        <!-- Dynamic Tasks List -->
+        <div id="daily-tasks-list" class="space-y-3">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Micro-Habits Strip for Working Professionals -->
+      <div class="glass-card rounded-2xl p-4">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <span>⚡</span> Non-Negotiable Micro-Habits (15-Min Sprints)
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <label class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition">
+            <input type="checkbox" id="habit-math" onchange="toggleHabit('math')" class="w-4 h-4 rounded text-indigo-600 focus:ring-0 bg-slate-800 border-slate-700">
+            <div>
+              <div class="font-semibold text-slate-200">Maths King Scan</div>
+              <div class="text-[11px] text-slate-400">10 mins formula scan before solving</div>
+            </div>
+          </label>
+          <label class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition">
+            <input type="checkbox" id="habit-vocab" onchange="toggleHabit('vocab')" class="w-4 h-4 rounded text-indigo-600 focus:ring-0 bg-slate-800 border-slate-700">
+            <div>
+              <div class="font-semibold text-slate-200">Blackbook 20 Words</div>
+              <div class="text-[11px] text-slate-400">Daily OWS / Idioms spaced review</div>
+            </div>
+          </label>
+          <label class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition">
+            <input type="checkbox" id="habit-typing" onchange="toggleHabit('typing')" class="w-4 h-4 rounded text-indigo-600 focus:ring-0 bg-slate-800 border-slate-700">
+            <div>
+              <div class="font-semibold text-slate-200">Touch Typing Drill</div>
+              <div class="text-[11px] text-slate-400">15 mins DEST speed practice</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: SYLLABUS MATRIX -->
+    <section id="view-syllabus" class="tab-view hidden space-y-5">
+      
+      <!-- Subject Switcher -->
+      <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+        <button onclick="filterSyllabus('quant')" id="sub-btn-quant" class="sub-filter-btn px-4 py-2 rounded-xl bg-indigo-600 text-white shadow-sm transition">
+          📐 Quant (Kiran + Maths King)
+        </button>
+        <button onclick="filterSyllabus('gk')" id="sub-btn-gk" class="sub-filter-btn px-4 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">
+          🏛️ GK (Parmar Notes & Fatman)
+        </button>
+        <button onclick="filterSyllabus('english')" id="sub-btn-english" class="sub-filter-btn px-4 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">
+          📖 English (Blackbook & Rules)
+        </button>
+        <button onclick="filterSyllabus('reasoning')" id="sub-btn-reasoning" class="sub-filter-btn px-4 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">
+          🧩 Reasoning
+        </button>
+        <button onclick="filterSyllabus('computer')" id="sub-btn-computer" class="sub-filter-btn px-4 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">
+          💻 Computer (Tier 2)
+        </button>
+      </div>
+
+      <!-- Topic Decay Radar Summary Banner -->
+      <div class="glass-card rounded-2xl p-3.5 border-slate-800 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-2">
+          <span>📡</span>
+          <span class="text-slate-300"><strong>Topic Decay Radar:</strong> Chapters not revised in >15 days turn amber; >25 days turn red.</span>
+        </div>
+        <span class="text-[11px] text-slate-400">Auto-calculated</span>
+      </div>
+
+      <!-- Syllabus Chapters Container -->
+      <div id="syllabus-content" class="space-y-3">
+        <!-- Rendered via JS -->
+      </div>
+
+    </section>
+
+    <!-- TAB 3: TESTBOOK MOCKS -->
+    <section id="view-mocks" class="tab-view hidden space-y-6">
+      
+      <!-- New Mock Logging Card -->
+      <div class="glass-card-accent rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>📊</span> Log New Testbook Mock
+        </h3>
+        <form onsubmit="handleLogMock(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1">Mock Name / Code</label>
+            <input type="text" id="mock-input-name" required placeholder="e.g. Testbook Tier 1 Mock 04" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Tier & Type</label>
+            <select id="mock-input-tier" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-indigo-500 outline-none">
+              <option value="Tier 1">Tier 1 (200 Marks / 100 Qs)</option>
+              <option value="Tier 2">Tier 2 (390 Marks)</option>
+              <option value="Sectional">Sectional Drill (50 Marks)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Total Score Obtained</label>
+            <input type="number" step="0.5" id="mock-input-score" required placeholder="e.g. 132.5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Percentile %</label>
+            <input type="number" step="0.1" id="mock-input-percentile" required placeholder="e.g. 89.2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-indigo-500 outline-none">
+          </div>
+          
+          <!-- Subject breakdown -->
+          <div>
+            <label class="block text-slate-400 mb-1">Math Score</label>
+            <input type="number" step="0.5" id="mock-input-math" placeholder="e.g. 42" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Reasoning Score</label>
+            <input type="number" step="0.5" id="mock-input-reasoning" placeholder="e.g. 46" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">English Score</label>
+            <input type="number" step="0.5" id="mock-input-english" placeholder="e.g. 38" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">GK Score</label>
+            <input type="number" step="0.5" id="mock-input-gk" placeholder="e.g. 18" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+          </div>
+
+          <div class="sm:col-span-2 md:col-span-3">
+            <label class="block text-slate-400 mb-1">Key Observation / Traps</label>
+            <input type="text" id="mock-input-notes" placeholder="e.g. Time ran out during Geometry; GK questions had tricky negative marks." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg transition shadow-md active:scale-95">
+              Save Mock (+75 XP)
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Mock History List -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Historical Testbook Records</h3>
+        <div id="mock-history-list" class="space-y-3">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 4: MISTAKE NOTEBOOK (ERROR LOG) -->
+    <section id="view-mistakes" class="tab-view hidden space-y-6">
+      
+      <!-- Add New Mistake Form -->
+      <div class="glass-card rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>📕</span> Add to Mistake Notebook
+        </h3>
+        <form onsubmit="handleSaveMistake(event)" class="space-y-3 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 mb-1">Subject</label>
+              <select id="err-subject" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+                <option value="Quant">Quant (Kiran / Sreedhar)</option>
+                <option value="GK">General Awareness (Parmar)</option>
+                <option value="English">English (Blackbook / Grammar)</option>
+                <option value="Reasoning">Reasoning</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1">Chapter / Concept</label>
+              <input type="text" id="err-topic" required placeholder="e.g. Installments in CI / Revolt 1857 leaders" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1">Mistake Category</label>
+              <select id="err-category" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+                <option value="Silly / Calculation">Silly / Calculation Trap</option>
+                <option value="Formula Forgotten">Formula / Identity Forgotten</option>
+                <option value="Time Trap (>90s)">Time Trap (Burned too much time)</option>
+                <option value="Concept Never Studied">Concept Gap (Never studied)</option>
+                <option value="Misread Question">Misread Question (e.g. 'Not true')</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Question Summary / Core Trap</label>
+            <input type="text" id="err-question" required placeholder="e.g. Two trains crossing with different lengths and relative speeds" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Correction & Key Rule to Remember</label>
+            <textarea id="err-lesson" required rows="2" placeholder="e.g. Always convert km/h to m/s by multiplying 5/18. Check Maths King page 24." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none"></textarea>
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-5 py-2 rounded-lg transition active:scale-95 shadow-md">
+              Log Mistake (+25 XP)
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Mistake Log Filters & List -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Mistake Vault</h3>
+          <span class="text-xs text-slate-400" id="mistakes-count">0 Mistakes Logged</span>
+        </div>
+        <div id="mistakes-list" class="space-y-3">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 5: OFFICE SCRATCHPAD -->
+    <section id="view-scratchpad" class="tab-view hidden space-y-4">
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-sm font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-2">
+              <span>📝</span> Office Digital Scratchpad
+            </h3>
+            <p class="text-xs text-slate-400">Jot down timestamps, mnemonics, or tricky problems in office without physical notebooks. Auto-saves locally.</p>
+          </div>
+          <span class="text-[11px] text-emerald-400 font-medium" id="scratchpad-save-status">Saved</span>
+        </div>
+        <textarea id="office-scratchpad-input" oninput="handleScratchpadInput()" rows="16" placeholder="Example:
+• Parmar Modern History Video #4: Lucknow Pact (1916) presided by Ambica Charan Majumdar.
+• Maths King Geometry: In a triangle with sides a, b, c, length of median to side c is 1/2 * sqrt(2a^2 + 2b^2 - c^2) (Apollonius theorem).
+• Blackbook: 'Ephemeral' = lasting for a very short time." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 text-xs font-mono text-slate-200 outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: OFFICE VIDEO BONUS LOGGER -->
+  <div id="modal-office" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full rounded-2xl p-6 border-indigo-500/30 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>💼</span> Log Office Video Session
+        </h3>
+        <button onclick="closeOfficeModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400">
+        Got free time at work? Log video lectures watched at 1.25x/1.5x (Parmar Sir or Sreedhar's CCE). This automatically relaxes your evening load!
+      </p>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">Hours Absorbed</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="selectOfficeHours(1)" class="office-h-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white font-medium transition" data-h="1">1.0 hr</button>
+            <button onclick="selectOfficeHours(1.5)" class="office-h-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white font-medium transition" data-h="1.5">1.5 hrs</button>
+            <button onclick="selectOfficeHours(2)" class="office-h-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white font-medium transition" data-h="2">2.0 hrs</button>
+            <button onclick="selectOfficeHours(3)" class="office-h-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white font-medium transition" data-h="3">3.0 hrs</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Subject & Topic</label>
+          <input type="text" id="office-topic-input" placeholder="e.g. Parmar Modern History Lecture 3 & 4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none">
+        </div>
+      </div>
+      <div class="flex items-center justify-end space-x-2 pt-2">
+        <button onclick="closeOfficeModal()" class="px-3 py-2 rounded-lg text-slate-400 hover:text-white text-xs">Cancel</button>
+        <button onclick="saveOfficeBonus()" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md active:scale-95 transition">
+          Apply to Today (+40 XP)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: BACKLOG ROLLOVER DRAWER -->
+  <div id="modal-backlog" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-lg w-full rounded-2xl p-6 border-amber-500/30 space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-amber-300 flex items-center gap-2">
+          <span>⏳</span> Backlog Debt Clearance
+        </h3>
+        <button onclick="closeBacklogDrawer()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400">
+        Tasks carried forward from busy office weekdays. Clear these on <strong>Even Saturdays</strong> or <strong>Sundays</strong> to maintain zero debt!
+      </p>
+      <div id="backlog-items-list" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+        <button onclick="clearAllBacklog()" class="text-xs text-rose-400 hover:underline">Clear All</button>
+        <button onclick="closeBacklogDrawer()" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-200 text-xs font-semibold">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: SYNC & BACKUP MODAL -->
+  <div id="modal-sync" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full rounded-2xl p-6 border-slate-700 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>⚙️</span> Sync Across Laptop & Mobile
+        </h3>
+        <button onclick="closeSyncModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400">
+        Your data is saved securely in your browser. Transfer your progress seamlessly between your work laptop, home PC, and mobile phone.
+      </p>
+      <div class="space-y-3 text-xs">
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+          <h4 class="font-bold text-slate-200 mb-1">1. Download Progress Backup</h4>
+          <p class="text-slate-400 mb-2">Exports a lightweight `.json` file of all syllabus checkboxes, mock scores, and notes.</p>
+          <button onclick="exportBackupJSON()" class="w-full bg-slate-800 hover:bg-slate-700 text-indigo-400 font-semibold py-2 rounded-lg border border-slate-700 transition">
+            💾 Download Backup File
+          </button>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+          <h4 class="font-bold text-slate-200 mb-1">2. Load Progress Backup</h4>
+          <p class="text-slate-400 mb-2">Select a `.json` backup file from another device to restore.</p>
+          <input type="file" id="backup-file-input" accept=".json" onchange="handleFileImport(event)" class="text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+        </div>
+      </div>
+      <div class="flex justify-end pt-2">
+        <button onclick="closeSyncModal()" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm pointer-events-none"></div>
+
+  <!-- APP SCRIPTS -->
+  <script src="syllabus-data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Tab switching controller
+    let currentTab = 'cockpit';
+    let currentSyllabusFilter = 'quant';
+    let selectedOfficeHoursVal = 1.5;
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('bg-indigo-600', 'text-white');
+        el.classList.add('text-slate-400');
+      });
+
+      const activeView = document.getElementById(`view-${tabId}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('text-slate-400');
+      }
+
+      if (tabId === 'syllabus') renderSyllabus();
+      if (tabId === 'mocks') renderMocks();
+      if (tabId === 'mistakes') renderMistakes();
+      if (tabId === 'scratchpad') loadScratchpad();
+    }
+
+    // Toggle MVD (Exhaustion Mode)
+    function toggleMVDMode() {
+      appState.settings.energyMode = appState.settings.energyMode === 'mvd' ? 'normal' : 'mvd';
+      saveState();
+      // Regenerate tasks for today under new mode
+      appState.lastGeneratedDate = null; // force regen
+      generateDailyTasks(getCalendarDayInfo(), appState.settings.energyMode);
+      renderApp();
+      showToast(appState.settings.energyMode === 'mvd' ? '⚡ MVD Mode Enabled (30m target)' : '💪 Full Plan Restored', 'info');
+    }
+
+    // Office Modal Handlers
+    function openOfficeModal() {
+      document.getElementById('modal-office').classList.remove('hidden');
+      selectOfficeHours(1.5);
+    }
+    function closeOfficeModal() {
+      document.getElementById('modal-office').classList.add('hidden');
+    }
+    function selectOfficeHours(h) {
+      selectedOfficeHoursVal = h;
+      document.querySelectorAll('.office-h-btn').forEach(btn => {
+        if (parseFloat(btn.dataset.h) === h) {
+          btn.classList.add('bg-indigo-600', 'text-white');
+          btn.classList.remove('bg-slate-800', 'text-slate-300');
+        } else {
+          btn.classList.remove('bg-indigo-600', 'text-white');
+          btn.classList.add('bg-slate-800', 'text-slate-300');
+        }
+      });
+    }
+    function saveOfficeBonus() {
+      const topic = document.getElementById('office-topic-input').value || 'Video lecture';
+      appState.officeBonusHours = selectedOfficeHoursVal;
+      addXP(40, `Office Video Session: ${selectedOfficeHoursVal}h`);
+      closeOfficeModal();
+      renderApp();
+    }
+
+    // Backlog Modal Handlers
+    function openBacklogDrawer() {
+      document.getElementById('modal-backlog').classList.remove('hidden');
+      renderBacklogList();
+    }
+    function closeBacklogDrawer() {
+      document.getElementById('modal-backlog').classList.add('hidden');
+      renderApp();
+    }
+    function renderBacklogList() {
+      const container = document.getElementById('backlog-items-list');
+      if (appState.backlog.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 py-4 text-center">🎉 No pending backlog! You are completely debt-free.</p>`;
+        return;
+      }
+      container.innerHTML = appState.backlog.map(item => `
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-slate-200">${item.title}</div>
+            <div class="text-[11px] text-slate-400">${item.resource} • From ${item.originalDate}</div>
+          </div>
+          <button onclick="resolveBacklogItem('${item.id}')" class="px-2.5 py-1 rounded bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 text-[11px] hover:bg-emerald-600/30">
+            Done (+30 XP)
+          </button>
+        </div>
+      `).join('');
+    }
+    function resolveBacklogItem(id) {
+      appState.backlog = appState.backlog.filter(i => i.id !== id);
+      addXP(30, 'Backlog task cleared');
+      saveState();
+      renderBacklogList();
+      renderApp();
+    }
+    function clearAllBacklog() {
+      appState.backlog = [];
+      saveState();
+      renderBacklogList();
+      renderApp();
+    }
+
+    // Sync Modal Handlers
+    function openSyncModal() {
+      document.getElementById('modal-sync').classList.remove('hidden');
+    }
+    function closeSyncModal() {
+      document.getElementById('modal-sync').classList.add('hidden');
+    }
+    function handleFileImport(e) {
+      if (e.target.files && e.target.files[0]) {
+        importBackupJSON(e.target.files[0]);
+        closeSyncModal();
+      }
+    }
+
+    // Habit Toggles
+    function toggleHabit(habitKey) {
+      addXP(15, `Micro-habit: ${habitKey}`);
+    }
+
+    // Task Completion in Daily Cockpit
+    function toggleTask(taskId) {
+      const task = appState.todayTasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        if (task.completed) {
+          addXP(task.xp || 40, task.title);
+        }
+        saveState();
+        renderApp();
+      }
+    }
+
+    // Syllabus Filter & Rendering
+    function filterSyllabus(subjectKey) {
+      currentSyllabusFilter = subjectKey;
+      document.querySelectorAll('.sub-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-400');
+      });
+      const activeBtn = document.getElementById(`sub-btn-${subjectKey}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
+      }
+      renderSyllabus();
+    }
+
+    function toggleSyllabusCheckbox(subject, itemId, field) {
+      const list = appState.syllabus[subject];
+      if (!list) return;
+      const item = list.find(i => i.id === itemId);
+      if (!item) return;
+      item[field] = !item[field];
+      if (item[field]) {
+        item.lastRevised = new Date().toISOString().split('T')[0];
+        addXP(20, `${item.name} - ${field}`);
+      }
+      saveState();
+      renderSyllabus();
+    }
+
+    function renderSyllabus() {
+      const container = document.getElementById('syllabus-content');
+      const items = appState.syllabus[currentSyllabusFilter] || [];
+
+      if (currentSyllabusFilter === 'quant') {
+        container.innerHTML = items.map(ch => {
+          const decay = getDecayStatus(ch.lastRevised);
+          return `
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${ch.category}</span>
+                  <h4 class="font-bold text-slate-200 text-sm">${ch.name}</h4>
+                </div>
+                <div class="text-[11px] ${decay.color}">
+                  📡 ${decay.label}
+                </div>
+              </div>
+
+              <!-- 4-Stage Quant Pipeline -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.sreedharConcept ? 'checked' : ''} onchange="toggleSyllabusCheckbox('quant', '${ch.id}', 'sreedharConcept')" class="w-3.5 h-3.5 rounded text-indigo-600 bg-slate-800 border-slate-700">
+                  <span class="text-slate-300">Sreedhar Concept</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.mathsKingFormula ? 'checked' : ''} onchange="toggleSyllabusCheckbox('quant', '${ch.id}', 'mathsKingFormula')" class="w-3.5 h-3.5 rounded text-amber-500 bg-slate-800 border-slate-700">
+                  <span class="text-amber-300 font-medium">Maths King Rules</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.kiranPyqSolved ? 'checked' : ''} onchange="toggleSyllabusCheckbox('quant', '${ch.id}', 'kiranPyqSolved')" class="w-3.5 h-3.5 rounded text-indigo-600 bg-slate-800 border-slate-700">
+                  <span class="text-slate-300">Kiran PYQ Done</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.testbookDrill ? 'checked' : ''} onchange="toggleSyllabusCheckbox('quant', '${ch.id}', 'testbookDrill')" class="w-3.5 h-3.5 rounded text-indigo-600 bg-slate-800 border-slate-700">
+                  <span class="text-slate-300">Testbook Drill</span>
+                </label>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else if (currentSyllabusFilter === 'gk') {
+        container.innerHTML = items.map(ch => {
+          const decay = getDecayStatus(ch.lastRevised);
+          return `
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${ch.category}</span>
+                  <h4 class="font-bold text-slate-200 text-sm">${ch.name}</h4>
+                </div>
+                <div class="text-[11px] ${decay.color}">
+                  📡 ${decay.label}
+                </div>
+              </div>
+
+              <!-- Parmar Specific Pipeline -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.parmarVideo ? 'checked' : ''} onchange="toggleSyllabusCheckbox('gk', '${ch.id}', 'parmarVideo')" class="w-3.5 h-3.5 rounded text-indigo-600 bg-slate-800 border-slate-700">
+                  <span class="text-slate-300">Parmar Video</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.parmarNotes ? 'checked' : ''} onchange="toggleSyllabusCheckbox('gk', '${ch.id}', 'parmarNotes')" class="w-3.5 h-3.5 rounded text-emerald-500 bg-slate-800 border-slate-700">
+                  <span class="text-emerald-300 font-medium">Class Notes Book</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.parmarFatman ? 'checked' : ''} onchange="toggleSyllabusCheckbox('gk', '${ch.id}', 'parmarFatman')" class="w-3.5 h-3.5 rounded text-amber-500 bg-slate-800 border-slate-700">
+                  <span class="text-amber-300 font-medium">Fatman Revision</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer">
+                  <input type="checkbox" ${ch.testbookQuiz ? 'checked' : ''} onchange="toggleSyllabusCheckbox('gk', '${ch.id}', 'testbookQuiz')" class="w-3.5 h-3.5 rounded text-indigo-600 bg-slate-800 border-slate-700">
+                  <span class="text-slate-300">Testbook Quiz</span>
+                </label>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        // English, Reasoning, Computer
+        container.innerHTML = items.map(ch => {
+          return `
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-slate-200 text-sm">${ch.name}</h4>
+                <div class="text-[11px] text-slate-400">${ch.category || 'Core Module'}</div>
+              </div>
+              <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer">
+                <input type="checkbox" ${ch.done || ch.sreedharRules || ch.sreedharConcept ? 'checked' : ''} onchange="toggleSyllabusCheckbox('${currentSyllabusFilter}', '${ch.id}', '${ch.done !== undefined ? 'done' : ch.sreedharRules !== undefined ? 'sreedharRules' : 'sreedharConcept'}')" class="w-4 h-4 rounded text-indigo-600 bg-slate-800 border-slate-700">
+                <span class="text-xs text-slate-300">Completed</span>
+              </label>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Mock Logging Handlers
+    function handleLogMock(e) {
+      e.preventDefault();
+      const newMock = {
+        id: "mock-" + Date.now(),
+        date: new Date().toISOString().split("T")[0],
+        name: document.getElementById('mock-input-name').value,
+        tier: document.getElementById('mock-input-tier').value,
+        score: parseFloat(document.getElementById('mock-input-score').value) || 0,
+        maxScore: document.getElementById('mock-input-tier').value === 'Tier 2' ? 390 : 200,
+        percentile: parseFloat(document.getElementById('mock-input-percentile').value) || 0,
+        accuracy: 85,
+        mathScore: parseFloat(document.getElementById('mock-input-math').value) || 0,
+        reasoningScore: parseFloat(document.getElementById('mock-input-reasoning').value) || 0,
+        englishScore: parseFloat(document.getElementById('mock-input-english').value) || 0,
+        gkScore: parseFloat(document.getElementById('mock-input-gk').value) || 0,
+        notes: document.getElementById('mock-input-notes').value || ""
+      };
+      appState.mocks.unshift(newMock);
+      addXP(75, `Testbook Mock: ${newMock.name}`);
+      e.target.reset();
+      renderMocks();
+    }
+
+    function renderMocks() {
+      const container = document.getElementById('mock-history-list');
+      if (appState.mocks.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-xs py-4">No mocks logged yet. Start with a Testbook Tier-1 mock this Sunday!</p>`;
+        return;
+      }
+      container.innerHTML = appState.mocks.map(m => `
+        <div class="glass-card rounded-2xl p-4 space-y-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-800 pb-2">
+            <div>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${m.tier}</span>
+              <span class="font-bold text-slate-100 text-sm ml-2">${m.name}</span>
+            </div>
+            <div class="text-xs text-slate-400">${m.date}</div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+            <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-slate-400">Score:</span> <strong class="text-indigo-400 text-sm">${m.score}</strong> / ${m.maxScore}
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-slate-400">Percentile:</span> <strong class="text-amber-400 text-sm">${m.percentile}%</strong>
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800 col-span-2">
+              <span class="text-slate-400">Sectional:</span> M:${m.mathScore || '-'} | R:${m.reasoningScore || '-'} | E:${m.englishScore || '-'} | GK:${m.gkScore || '-'}
+            </div>
+          </div>
+          ${m.notes ? `<p class="text-xs text-slate-400 bg-slate-900/30 p-2 rounded-lg border border-slate-800/40">💡 ${m.notes}</p>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // Mistake Notebook Handlers
+    function handleSaveMistake(e) {
+      e.preventDefault();
+      const newMistake = {
+        id: "m-" + Date.now(),
+        date: new Date().toISOString().split("T")[0],
+        subject: document.getElementById('err-subject').value,
+        topic: document.getElementById('err-topic').value,
+        errorType: document.getElementById('err-category').value,
+        question: document.getElementById('err-question').value,
+        lesson: document.getElementById('err-lesson').value,
+        resolved: false
+      };
+      appState.mistakes.unshift(newMistake);
+      addXP(25, `Mistake Logged: ${newMistake.topic}`);
+      e.target.reset();
+      renderMistakes();
+    }
+
+    function toggleMistakeResolved(id) {
+      const m = appState.mistakes.find(item => item.id === id);
+      if (m) {
+        m.resolved = !m.resolved;
+        saveState();
+        renderMistakes();
+      }
+    }
+
+    function renderMistakes() {
+      const container = document.getElementById('mistakes-list');
+      document.getElementById('mistakes-count').innerText = `${appState.mistakes.length} Mistakes Logged`;
+      if (appState.mistakes.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-xs py-4">No mistakes in the vault. Maintain high accuracy!</p>`;
+        return;
+      }
+      container.innerHTML = appState.mistakes.map(m => `
+        <div class="glass-card rounded-2xl p-4 space-y-2 border-l-4 ${m.resolved ? 'border-emerald-500 opacity-60' : 'border-rose-500'}">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-slate-200">${m.subject}: ${m.topic}</span>
+              <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[10px] font-semibold">${m.errorType}</span>
+            </div>
+            <button onclick="toggleMistakeResolved('${m.id}')" class="text-[11px] ${m.resolved ? 'text-slate-400 hover:text-white' : 'text-emerald-400 hover:underline'}">
+              ${m.resolved ? 'Mark Unresolved' : '✓ Mastered'}
+            </button>
+          </div>
+          <div class="text-xs text-slate-300">
+            <strong>Question:</strong> ${m.question}
+          </div>
+          <div class="text-xs text-amber-200 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+            <strong>Key Lesson:</strong> ${m.lesson}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Scratchpad Handlers
+    function loadScratchpad() {
+      const input = document.getElementById('office-scratchpad-input');
+      if (input) input.value = appState.officeNotes || "";
+    }
+    function handleScratchpadInput() {
+      const input = document.getElementById('office-scratchpad-input');
+      appState.officeNotes = input.value;
+      saveState();
+      const status = document.getElementById('scratchpad-save-status');
+      if (status) {
+        status.innerText = "Saving...";
+        setTimeout(() => { status.innerText = "Saved"; }, 300);
+      }
+    }
+
+    // MAIN RENDER APP FUNCTION
+    function renderApp() {
+      // 1. Rank & XP update
+      const rankInfo = getOfficerRank(appState.user.xp);
+      document.getElementById('rank-badge-icon').innerText = rankInfo.currentRank.badge;
+      document.getElementById('rank-title').innerText = rankInfo.currentRank.title;
+      document.getElementById('xp-counter').innerText = `${appState.user.xp} XP`;
+      document.getElementById('streak-counter').innerText = appState.user.streak;
+      document.getElementById('rank-progress-bar').style.width = `${rankInfo.progressPercent}%`;
+
+      // 2. Calendar day info
+      const dayInfo = getCalendarDayInfo();
+      document.getElementById('calendar-day-label').innerText = dayInfo.label;
+      document.getElementById('calendar-day-badge').innerText = dayInfo.badge;
+
+      // 3. MVD mode indicators
+      const isMvd = appState.settings.energyMode === 'mvd';
+      const mvdBanner = document.getElementById('mvd-banner');
+      const mvdBtnText = document.getElementById('mvd-btn-text');
+      if (isMvd) {
+        mvdBanner.classList.remove('hidden');
+        mvdBtnText.innerText = "MVD Active (30m)";
+      } else {
+        mvdBanner.classList.add('hidden');
+        mvdBtnText.innerText = "Exhaustion Mode (MVD)";
+      }
+
+      // 4. Backlog drawer warning
+      const backlogBanner = document.getElementById('backlog-banner');
+      const backlogText = document.getElementById('backlog-count-text');
+      if (appState.backlog && appState.backlog.length > 0) {
+        backlogBanner.classList.remove('hidden');
+        backlogText.innerText = `You have ${appState.backlog.length} carried-forward tasks. Clear them on Even Saturday or Sunday!`;
+      } else {
+        backlogBanner.classList.add('hidden');
+      }
+
+      // 5. Office relief indicator
+      const officeRelief = document.getElementById('office-relief-banner');
+      const officeReliefText = document.getElementById('office-relief-text');
+      if (appState.officeBonusHours > 0) {
+        officeRelief.classList.remove('hidden');
+        officeReliefText.innerText = `Logged ${appState.officeBonusHours}h Office Video. Evening study load relieved by ${appState.officeBonusHours}h!`;
+      } else {
+        officeRelief.classList.add('hidden');
+      }
+
+      // 6. Generate and Render Daily Tasks
+      const tasks = generateDailyTasks(dayInfo, appState.settings.energyMode);
+      const tasksList = document.getElementById('daily-tasks-list');
+      const completedCount = tasks.filter(t => t.completed).length;
+      document.getElementById('tasks-completion-rate').innerText = `${completedCount} / ${tasks.length} Completed`;
+
+      tasksList.innerHTML = tasks.map(task => `
+        <div class="glass-card rounded-2xl p-4 transition-all duration-200 border-l-4 ${task.completed ? 'border-emerald-500 bg-slate-900/40 opacity-75' : 'border-indigo-500'}">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start space-x-3">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-5 h-5 mt-0.5 rounded text-indigo-600 bg-slate-800 border-slate-700 cursor-pointer focus:ring-0">
+              <div>
+                <span class="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider">${task.timeSlot}</span>
+                <h4 class="text-sm font-bold text-slate-100 ${task.completed ? 'line-through text-slate-400' : ''}">${task.title}</h4>
+                <div class="text-xs text-amber-300/90 font-medium mt-0.5">📖 ${task.resource}</div>
+                <p class="text-xs text-slate-400 mt-1">${task.description}</p>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-300 font-semibold whitespace-nowrap">
+              +${task.xp} XP
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      rolloverUnfinishedTasks();
+      renderApp();
+      loadScratchpad();
+
+      // Register Service Worker if supported
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW register failed:', err));
+      }
+    });
+  </script>
+</body>
+</html>
