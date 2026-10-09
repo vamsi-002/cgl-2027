@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Vamsi's CGL 2027 Command Center</title>
   <meta name="description" content="Dedicated high-performance SSC CGL 2027 preparation cockpit for working aspirant Vamsi." />
   <link rel="manifest" href="manifest.json" />
@@ -51,118 +51,133 @@
 <body class="bg-[#070b13] text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
   <!-- TOP HEADER & OFFICER COCKPIT -->
-  <header class="sticky top-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 sm:px-6">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+  <header class="sticky top-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-slate-800/80 px-3 py-2 sm:px-6 sm:py-3">
+    <div class="max-w-7xl mx-auto flex flex-col gap-2">
       
-      <!-- User & Officer Level -->
-      <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 p-[2px] shadow-lg shadow-indigo-500/20">
-            <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-lg" id="rank-badge-icon">
+      <!-- Top Row: Profile on Left, All 4 Action Buttons on Right -->
+      <div class="flex items-center justify-between w-full">
+        <!-- User Profile & Level -->
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 p-[2px] shadow-md shadow-indigo-500/20 shrink-0">
+            <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-base" id="rank-badge-icon">
               🎯
             </div>
           </div>
           <div>
-            <div class="flex items-center space-x-2">
-              <h1 class="font-bold text-base text-white tracking-tight flex items-center gap-1.5">
+            <div class="flex items-center space-x-1.5">
+              <h1 class="font-bold text-sm sm:text-base text-white tracking-tight flex items-center gap-1">
                 <span>Vamsi</span>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-medium">CGL 2027</span>
+                <span class="text-[10px] sm:text-xs px-1.5 py-0.2 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-medium">CGL 2027</span>
               </h1>
-              <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
-                🔥 <span id="streak-counter">1</span>d Streak
+              <span class="text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-0.5">
+                🔥 <span id="streak-counter">1</span>d
               </span>
             </div>
-            <p class="text-xs text-slate-400 flex items-center gap-1">
+            <p class="text-[11px] sm:text-xs text-slate-400">
               <span id="rank-title" class="font-medium text-slate-300">CGL Aspirant</span> • <span id="xp-counter">120 XP</span>
             </p>
           </div>
         </div>
 
-        <!-- Quick Action Buttons (Mobile visible) -->
-        <div class="flex items-center space-x-2 md:hidden">
-          <button onclick="toggleMVDMode()" id="mvd-toggle-mobile" class="text-xs px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 active:scale-95 transition">
-            ⚡ MVD
+        <!-- Action Buttons (ALWAYS VISIBLE on Mobile & Desktop) -->
+        <div class="flex items-center space-x-1 sm:space-x-2">
+          <!-- Exhaustion Mode (MVD) -->
+          <button onclick="toggleMVDMode()" id="mvd-toggle-btn" class="px-2 py-1.5 sm:px-3 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-amber-300 active:scale-95 transition flex items-center space-x-1 text-xs" title="Minimum Viable Day (30m target for tired days)">
+            <span>⚡</span>
+            <span class="hidden sm:inline" id="mvd-btn-text">MVD</span>
           </button>
-          <button onclick="openOfficeModal()" class="text-xs px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-medium shadow-sm active:scale-95 transition">
-            💼 Office
+
+          <!-- Office Stealth Video -->
+          <button onclick="openOfficeModal()" class="px-2 py-1.5 sm:px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-sm active:scale-95 transition flex items-center space-x-1 text-xs" title="Log 1-3h video watched in office">
+            <span>💼</span>
+            <span class="hidden sm:inline">Office</span>
+          </button>
+
+          <!-- Alarms (.ICS Calendar) -->
+          <button onclick="exportCalendarICS()" class="px-2 py-1.5 sm:px-2.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-white active:scale-95 transition flex items-center space-x-1 text-xs" title="Download Phone Alarms (.ICS)">
+            <span>🔔</span>
+            <span class="hidden sm:inline">Alarms</span>
+          </button>
+
+          <!-- Sync & Backup -->
+          <button onclick="openSyncModal()" class="px-2 py-1.5 sm:px-2.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-white active:scale-95 transition flex items-center space-x-1 text-xs" title="Sync Laptop & Mobile">
+            <span>⚙️</span>
+            <span class="hidden sm:inline">Sync</span>
           </button>
         </div>
       </div>
 
-      <!-- Center: Date & Day Type Status -->
-      <div class="w-full md:w-auto flex items-center justify-between md:justify-center bg-slate-900/90 px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs">
-        <div class="flex items-center space-x-2">
-          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="calendar-day-label" class="font-medium text-slate-200">Loading Calendar Intelligence...</span>
+      <!-- Second Row: Date & Status Pill + XP Progress Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-slate-900/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-800/80 text-[11px] sm:text-xs">
+        <div class="flex items-center space-x-1.5 truncate">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span id="calendar-day-label" class="font-medium text-slate-200 truncate">Detecting Schedule...</span>
         </div>
-        <span id="calendar-day-badge" class="ml-2 px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-          Checking
-        </span>
+        <div class="flex items-center space-x-2 shrink-0">
+          <span id="calendar-day-badge" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            Checking
+          </span>
+          <div class="w-20 sm:w-28 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="rank-progress-bar" class="bg-gradient-to-r from-indigo-500 to-amber-400 h-full rounded-full transition-all duration-500" style="width: 15%"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Right: Action Bar (Desktop) -->
-      <div class="hidden md:flex items-center space-x-2.5">
-        <!-- Exhaustion Mode Toggle -->
-        <button onclick="toggleMVDMode()" id="mvd-toggle-btn" class="text-xs px-3 py-1.5 rounded-lg border border-slate-700 hover:border-amber-500/50 bg-slate-800/80 text-slate-300 hover:text-amber-300 transition flex items-center space-x-1.5" title="Minimum Viable Day for tired/overtime days">
-          <span>⚡</span>
-          <span id="mvd-btn-text">Exhaustion Mode (MVD)</span>
-        </button>
-
-        <!-- Office Stealth Mode -->
-        <button onclick="openOfficeModal()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-md shadow-indigo-600/20 active:scale-95 transition flex items-center space-x-1.5">
-          <span>💼</span>
-          <span>Log Office Video</span>
-        </button>
-
-        <!-- Sync & Alarms Menu -->
-        <button onclick="exportCalendarICS()" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition flex items-center space-x-1" title="Sync Phone Alarms via .ICS">
-          <span>🔔</span>
-          <span>Alarms</span>
-        </button>
-        <button onclick="openSyncModal()" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition flex items-center space-x-1" title="Backup or Restore Progress">
-          <span>⚙️</span>
-          <span>Sync</span>
-        </button>
-      </div>
-
-    </div>
-
-    <!-- Officer XP Progress bar -->
-    <div class="max-w-7xl mx-auto mt-2">
-      <div class="w-full bg-slate-800/60 rounded-full h-1.5 overflow-hidden">
-        <div id="rank-progress-bar" class="bg-gradient-to-r from-indigo-500 to-amber-400 h-full rounded-full transition-all duration-500" style="width: 15%"></div>
-      </div>
     </div>
   </header>
 
-  <!-- NAVIGATION TABS -->
-  <nav class="bg-[#0b101c] border-b border-slate-800 px-4 sticky top-[68px] z-30">
-    <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-3 overflow-x-auto py-2 no-scrollbar text-xs font-semibold">
-      <button onclick="switchTab('cockpit')" id="tab-btn-cockpit" class="tab-btn px-3.5 py-2 rounded-lg bg-indigo-600 text-white shadow-sm flex items-center space-x-1.5 whitespace-nowrap transition">
+  <!-- DESKTOP TOP NAVIGATION TABS (Hidden on Mobile) -->
+  <nav class="hidden md:block bg-[#0b101c] border-b border-slate-800 px-4 sticky top-[82px] z-30">
+    <div class="max-w-7xl mx-auto flex space-x-2 py-2 text-xs font-semibold">
+      <button onclick="switchTab('cockpit')" id="tab-btn-cockpit" class="tab-btn px-3.5 py-2 rounded-lg bg-indigo-600 text-white shadow-sm flex items-center space-x-1.5 transition">
         <span>📅</span>
         <span>Daily Cockpit</span>
       </button>
-      <button onclick="switchTab('syllabus')" id="tab-btn-syllabus" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+      <button onclick="switchTab('syllabus')" id="tab-btn-syllabus" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📚</span>
         <span>Syllabus Matrix</span>
       </button>
-      <button onclick="switchTab('mocks')" id="tab-btn-mocks" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+      <button onclick="switchTab('mocks')" id="tab-btn-mocks" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📊</span>
         <span>Testbook Mocks</span>
       </button>
-      <button onclick="switchTab('mistakes')" id="tab-btn-mistakes" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+      <button onclick="switchTab('mistakes')" id="tab-btn-mistakes" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📕</span>
         <span>Mistake Notebook</span>
       </button>
-      <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 whitespace-nowrap transition">
+      <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📝</span>
         <span>Office Scratchpad</span>
       </button>
     </div>
   </nav>
 
+  <!-- MOBILE BOTTOM NAVIGATION BAR (Fixed at Bottom, 100% visible on any screen ratio) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#090d16]/95 backdrop-blur-lg border-t border-slate-800/90 px-1 pt-1.5 flex justify-around items-center shadow-2xl" style="padding-bottom: max(8px, env(safe-area-inset-bottom));">
+    <button onclick="switchTab('cockpit')" id="tab-btn-cockpit-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-indigo-400 active:scale-95 transition">
+      <span class="text-base">📅</span>
+      <span class="text-[10px] font-semibold mt-0.5">Today</span>
+    </button>
+    <button onclick="switchTab('syllabus')" id="tab-btn-syllabus-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
+      <span class="text-base">📚</span>
+      <span class="text-[10px] font-semibold mt-0.5">Syllabus</span>
+    </button>
+    <button onclick="switchTab('mocks')" id="tab-btn-mocks-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
+      <span class="text-base">📊</span>
+      <span class="text-[10px] font-semibold mt-0.5">Mocks</span>
+    </button>
+    <button onclick="switchTab('mistakes')" id="tab-btn-mistakes-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
+      <span class="text-base">📕</span>
+      <span class="text-[10px] font-semibold mt-0.5">Mistakes</span>
+    </button>
+    <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
+      <span class="text-base">📝</span>
+      <span class="text-[10px] font-semibold mt-0.5">Notes</span>
+    </button>
+  </nav>
+
   <!-- MAIN VIEWPORT -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 pb-20">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 pb-28 md:pb-16">
 
     <!-- TAB 1: DAILY COCKPIT -->
     <section id="view-cockpit" class="tab-view space-y-6">
@@ -446,7 +461,7 @@
 
   <!-- MODAL 1: OFFICE VIDEO BONUS LOGGER -->
   <div id="modal-office" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="glass-card max-w-md w-full rounded-2xl p-6 border-indigo-500/30 space-y-4">
+    <div class="glass-card max-w-md w-full rounded-2xl p-5 sm:p-6 border-indigo-500/30 space-y-4 max-h-[85vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
           <span>💼</span> Log Office Video Session
@@ -482,7 +497,7 @@
 
   <!-- MODAL 2: BACKLOG ROLLOVER DRAWER -->
   <div id="modal-backlog" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="glass-card max-w-lg w-full rounded-2xl p-6 border-amber-500/30 space-y-4 max-h-[85vh] flex flex-col">
+    <div class="glass-card max-w-lg w-full rounded-2xl p-5 sm:p-6 border-amber-500/30 space-y-4 max-h-[85vh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-sm font-bold text-amber-300 flex items-center gap-2">
           <span>⏳</span> Backlog Debt Clearance
@@ -504,7 +519,7 @@
 
   <!-- MODAL 3: SYNC & BACKUP MODAL -->
   <div id="modal-sync" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="glass-card max-w-md w-full rounded-2xl p-6 border-slate-700 space-y-4">
+    <div class="glass-card max-w-md w-full rounded-2xl p-5 sm:p-6 border-slate-700 space-y-4 max-h-[85vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
           <span>⚙️</span> Sync Across Laptop & Mobile
@@ -549,18 +564,33 @@
     function switchTab(tabId) {
       currentTab = tabId;
       document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      
+      // Update Desktop tabs
       document.querySelectorAll('.tab-btn').forEach(el => {
         el.classList.remove('bg-indigo-600', 'text-white');
         el.classList.add('text-slate-400');
       });
-
-      const activeView = document.getElementById(`view-${tabId}`);
       const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-      if (activeView) activeView.classList.remove('hidden');
       if (activeBtn) {
         activeBtn.classList.add('bg-indigo-600', 'text-white');
         activeBtn.classList.remove('text-slate-400');
       }
+
+      // Update Mobile Bottom Nav buttons
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        btn.classList.remove('text-indigo-400', 'font-bold');
+        btn.classList.add('text-slate-400');
+      });
+      const activeMobileBtn = document.getElementById(`tab-btn-${tabId}-mobile`);
+      if (activeMobileBtn) {
+        activeMobileBtn.classList.add('text-indigo-400', 'font-bold');
+        activeMobileBtn.classList.remove('text-slate-400');
+      }
+
+      const activeView = document.getElementById(`view-${tabId}`);
+      if (activeView) activeView.classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabId === 'syllabus') renderSyllabus();
       if (tabId === 'mocks') renderMocks();
@@ -987,18 +1017,21 @@
       document.getElementById('tasks-completion-rate').innerText = `${completedCount} / ${tasks.length} Completed`;
 
       tasksList.innerHTML = tasks.map(task => `
-        <div class="glass-card rounded-2xl p-4 transition-all duration-200 border-l-4 ${task.completed ? 'border-emerald-500 bg-slate-900/40 opacity-75' : 'border-indigo-500'}">
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start space-x-3">
-              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-5 h-5 mt-0.5 rounded text-indigo-600 bg-slate-800 border-slate-700 cursor-pointer focus:ring-0">
-              <div>
-                <span class="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider">${task.timeSlot}</span>
-                <h4 class="text-sm font-bold text-slate-100 ${task.completed ? 'line-through text-slate-400' : ''}">${task.title}</h4>
-                <div class="text-xs text-amber-300/90 font-medium mt-0.5">📖 ${task.resource}</div>
-                <p class="text-xs text-slate-400 mt-1">${task.description}</p>
+        <div class="glass-card rounded-2xl p-3.5 sm:p-4 transition-all duration-200 border-l-4 ${task.completed ? 'border-emerald-500 bg-slate-900/40 opacity-75' : 'border-indigo-500'}">
+          <div class="flex items-start justify-between gap-2.5">
+            <div class="flex items-start space-x-2.5 min-w-0">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-5 h-5 mt-0.5 rounded text-indigo-600 bg-slate-800 border-slate-700 cursor-pointer focus:ring-0 shrink-0">
+              <div class="min-w-0">
+                <div class="flex items-center space-x-2">
+                  <span class="text-[10px] sm:text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider">${task.timeSlot}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-800/80 text-amber-300 font-semibold sm:hidden">+${task.xp} XP</span>
+                </div>
+                <h4 class="text-sm font-bold text-slate-100 ${task.completed ? 'line-through text-slate-400' : ''} leading-snug">${task.title}</h4>
+                <div class="text-[11px] sm:text-xs text-amber-300/90 font-medium mt-0.5">📖 ${task.resource}</div>
+                <p class="text-[11px] sm:text-xs text-slate-400 mt-1">${task.description}</p>
               </div>
             </div>
-            <span class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-300 font-semibold whitespace-nowrap">
+            <span class="hidden sm:inline-block text-xs px-2 py-1 rounded bg-slate-800 text-slate-300 font-semibold whitespace-nowrap shrink-0">
               +${task.xp} XP
             </span>
           </div>
