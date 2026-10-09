@@ -45,6 +45,12 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .glass-card-accent { background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1px solid rgba(99, 102, 241, 0.2); }
+    /* 3D Flashcard flip */
+    .flip-card { perspective: 1000px; }
+    .flip-card-inner { transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+    .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+    .flip-card-front, .flip-card-back { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .flip-card-back { transform: rotateY(180deg); }
   </style>
 </head>
 
@@ -80,29 +86,39 @@
         </div>
 
         <!-- Action Buttons (ALWAYS VISIBLE on Mobile & Desktop) -->
-        <div class="flex items-center space-x-1 sm:space-x-2">
+        <div class="flex items-center space-x-1 sm:space-x-1.5">
+          <!-- Focus Pomodoro & Ambient Sound -->
+          <button onclick="openPomodoroModal()" class="px-2 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-600/30 active:scale-95 transition flex items-center space-x-1 text-xs" title="Deep Focus Pomodoro & Ambient Sound (Rain/40Hz)">
+            <span>🎧</span>
+            <span class="hidden sm:inline">Focus</span>
+          </button>
+
+          <!-- Corporate Office Disguise Mode -->
+          <button onclick="toggleCorporateDisguise()" class="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-emerald-400 active:scale-95 transition flex items-center space-x-1 text-xs" title="Disguise screen as Excel spreadsheet (Boss/Colleague mode)">
+            <span>🤫</span>
+            <span class="hidden sm:inline">Disguise</span>
+          </button>
+
           <!-- Exhaustion Mode (MVD) -->
-          <button onclick="toggleMVDMode()" id="mvd-toggle-btn" class="px-2 py-1.5 sm:px-3 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-amber-300 active:scale-95 transition flex items-center space-x-1 text-xs" title="Minimum Viable Day (30m target for tired days)">
+          <button onclick="toggleMVDMode()" id="mvd-toggle-btn" class="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-amber-300 active:scale-95 transition flex items-center space-x-1 text-xs" title="Minimum Viable Day (30m target for tired days)">
             <span>⚡</span>
             <span class="hidden sm:inline" id="mvd-btn-text">MVD</span>
           </button>
 
           <!-- Office Stealth Video -->
-          <button onclick="openOfficeModal()" class="px-2 py-1.5 sm:px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-sm active:scale-95 transition flex items-center space-x-1 text-xs" title="Log 1-3h video watched in office">
+          <button onclick="openOfficeModal()" class="px-2 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-sm active:scale-95 transition flex items-center space-x-1 text-xs" title="Log 1-3h video watched in office">
             <span>💼</span>
             <span class="hidden sm:inline">Office</span>
           </button>
 
           <!-- Alarms (.ICS Calendar) -->
-          <button onclick="exportCalendarICS()" class="px-2 py-1.5 sm:px-2.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-white active:scale-95 transition flex items-center space-x-1 text-xs" title="Download Phone Alarms (.ICS)">
+          <button onclick="exportCalendarICS()" class="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-white active:scale-95 transition flex items-center space-x-1 text-xs" title="Download Phone Alarms (.ICS)">
             <span>🔔</span>
-            <span class="hidden sm:inline">Alarms</span>
           </button>
 
           <!-- Sync & Backup -->
-          <button onclick="openSyncModal()" class="px-2 py-1.5 sm:px-2.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-white active:scale-95 transition flex items-center space-x-1 text-xs" title="Sync Laptop & Mobile">
+          <button onclick="openSyncModal()" class="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-300 hover:text-white active:scale-95 transition flex items-center space-x-1 text-xs" title="Sync Laptop & Mobile">
             <span>⚙️</span>
-            <span class="hidden sm:inline">Sync</span>
           </button>
         </div>
       </div>
@@ -128,51 +144,59 @@
 
   <!-- DESKTOP TOP NAVIGATION TABS (Hidden on Mobile) -->
   <nav class="hidden md:block bg-[#0b101c] border-b border-slate-800 px-4 sticky top-[82px] z-30">
-    <div class="max-w-7xl mx-auto flex space-x-2 py-2 text-xs font-semibold">
-      <button onclick="switchTab('cockpit')" id="tab-btn-cockpit" class="tab-btn px-3.5 py-2 rounded-lg bg-indigo-600 text-white shadow-sm flex items-center space-x-1.5 transition">
+    <div class="max-w-7xl mx-auto flex space-x-1.5 py-2 text-xs font-semibold overflow-x-auto">
+      <button onclick="switchTab('cockpit')" id="tab-btn-cockpit" class="tab-btn px-3 py-2 rounded-lg bg-indigo-600 text-white shadow-sm flex items-center space-x-1.5 transition">
         <span>📅</span>
         <span>Daily Cockpit</span>
       </button>
-      <button onclick="switchTab('syllabus')" id="tab-btn-syllabus" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
+      <button onclick="switchTab('syllabus')" id="tab-btn-syllabus" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📚</span>
         <span>Syllabus Matrix</span>
       </button>
-      <button onclick="switchTab('mocks')" id="tab-btn-mocks" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
+      <button onclick="switchTab('flashcards')" id="tab-btn-flashcards" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
+        <span>🧠</span>
+        <span>Cards & Audio-Pod</span>
+      </button>
+      <button onclick="switchTab('codex')" id="tab-btn-codex" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
+        <span>📖</span>
+        <span>Maths King Codex</span>
+      </button>
+      <button onclick="switchTab('mocks')" id="tab-btn-mocks" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📊</span>
-        <span>Testbook Mocks</span>
+        <span>Mocks & Delta</span>
       </button>
-      <button onclick="switchTab('mistakes')" id="tab-btn-mistakes" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
+      <button onclick="switchTab('mistakes')" id="tab-btn-mistakes" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📕</span>
-        <span>Mistake Notebook</span>
+        <span>Mistake Vault</span>
       </button>
-      <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad" class="tab-btn px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
+      <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center space-x-1.5 transition">
         <span>📝</span>
-        <span>Office Scratchpad</span>
+        <span>Scratchpad</span>
       </button>
     </div>
   </nav>
 
   <!-- MOBILE BOTTOM NAVIGATION BAR (Fixed at Bottom, 100% visible on any screen ratio) -->
   <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#090d16]/95 backdrop-blur-lg border-t border-slate-800/90 px-1 pt-1.5 flex justify-around items-center shadow-2xl" style="padding-bottom: max(8px, env(safe-area-inset-bottom));">
-    <button onclick="switchTab('cockpit')" id="tab-btn-cockpit-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-indigo-400 active:scale-95 transition">
+    <button onclick="switchTab('cockpit')" id="tab-btn-cockpit-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-1.5 rounded-lg text-indigo-400 active:scale-95 transition">
       <span class="text-base">📅</span>
       <span class="text-[10px] font-semibold mt-0.5">Today</span>
     </button>
-    <button onclick="switchTab('syllabus')" id="tab-btn-syllabus-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
+    <button onclick="switchTab('syllabus')" id="tab-btn-syllabus-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-1.5 rounded-lg text-slate-400 active:scale-95 transition">
       <span class="text-base">📚</span>
       <span class="text-[10px] font-semibold mt-0.5">Syllabus</span>
     </button>
-    <button onclick="switchTab('mocks')" id="tab-btn-mocks-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
+    <button onclick="switchTab('flashcards')" id="tab-btn-flashcards-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-1.5 rounded-lg text-slate-400 active:scale-95 transition">
+      <span class="text-base">🧠</span>
+      <span class="text-[10px] font-semibold mt-0.5">Cards</span>
+    </button>
+    <button onclick="switchTab('codex')" id="tab-btn-codex-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-1.5 rounded-lg text-slate-400 active:scale-95 transition">
+      <span class="text-base">📖</span>
+      <span class="text-[10px] font-semibold mt-0.5">Codex</span>
+    </button>
+    <button onclick="switchTab('mocks')" id="tab-btn-mocks-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-1.5 rounded-lg text-slate-400 active:scale-95 transition">
       <span class="text-base">📊</span>
       <span class="text-[10px] font-semibold mt-0.5">Mocks</span>
-    </button>
-    <button onclick="switchTab('mistakes')" id="tab-btn-mistakes-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
-      <span class="text-base">📕</span>
-      <span class="text-[10px] font-semibold mt-0.5">Mistakes</span>
-    </button>
-    <button onclick="switchTab('scratchpad')" id="tab-btn-scratchpad-mobile" class="mobile-nav-btn flex flex-col items-center py-1 px-2 rounded-lg text-slate-400 active:scale-95 transition">
-      <span class="text-base">📝</span>
-      <span class="text-[10px] font-semibold mt-0.5">Notes</span>
     </button>
   </nav>
 
@@ -180,8 +204,31 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 pb-28 md:pb-16">
 
     <!-- TAB 1: DAILY COCKPIT -->
-    <section id="view-cockpit" class="tab-view space-y-6">
+    <section id="view-cockpit" class="tab-view space-y-5">
       
+      <!-- SSC CGL 2027 COUNTDOWN & FATIGUE ENERGY SELECTOR -->
+      <div class="glass-card-accent rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-indigo-500/20">
+        <div class="flex items-center space-x-3 w-full sm:w-auto">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
+            ⏳
+          </div>
+          <div>
+            <div class="text-[10px] sm:text-xs font-semibold text-amber-300 uppercase tracking-wider">Mission CGL 2027 Target</div>
+            <div class="text-sm sm:text-base font-bold font-mono text-white tracking-wide" id="cgl-countdown-timer">
+              Calculating Days...
+            </div>
+          </div>
+        </div>
+
+        <!-- Evening Fatigue-Adaptive Energy Selector -->
+        <div class="flex items-center justify-between sm:justify-start space-x-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-[11px] font-semibold w-full sm:w-auto">
+          <span class="text-slate-400 px-1 text-[10px]">Fatigue Level:</span>
+          <button onclick="setEnergyLevel('high')" id="energy-btn-high" class="flex-1 sm:flex-none px-2.5 py-1 rounded-lg bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 transition active:scale-95" title="Full 2.5h Session">🟢 High</button>
+          <button onclick="setEnergyLevel('medium')" id="energy-btn-medium" class="flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-slate-400 hover:text-amber-300 transition active:scale-95" title="Moderate 1.5h Session">🟡 Med</button>
+          <button onclick="setEnergyLevel('low')" id="energy-btn-low" class="flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-slate-400 hover:text-rose-300 transition active:scale-95" title="Exhausted / Overtime: 30m Micro-Session">🔴 Low</button>
+        </div>
+      </div>
+
       <!-- Alert Banners: Backlog & MVD Notification -->
       <div id="cockpit-alerts" class="space-y-3">
         <!-- Backlog Warning Drawer -->
@@ -305,9 +352,132 @@
 
     </section>
 
-    <!-- TAB 3: TESTBOOK MOCKS -->
+    <!-- TAB: FLASHCARDS & COMMUTE AUDIO-POD -->
+    <section id="view-flashcards" class="tab-view hidden space-y-6">
+      
+      <!-- Commute Voice Audio-Pod Banner -->
+      <div class="glass-card-accent rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-indigo-500/30">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-11 h-11 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-2xl shrink-0">
+            🚇
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>Commute & Metro Voice Audio-Pod</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">Hands-Free</span>
+            </h3>
+            <p class="text-xs text-slate-300 mt-0.5">Earphones mode. The app speaks questions, pauses 4s for mental recall, and speaks answers automatically.</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2 w-full sm:w-auto">
+          <button onclick="toggleCommuteAudio()" id="commute-audio-toggle-btn" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 active:scale-95 transition flex items-center justify-center space-x-1.5">
+            <span>🎧</span>
+            <span>Start Audio-Pod</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Deck Filter Pills & Status -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+          <button onclick="filterFlashcards('all')" id="deck-btn-all" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition">All Cards</button>
+          <button onclick="filterFlashcards('blackbook')" id="deck-btn-blackbook" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">Blackbook Vocab</button>
+          <button onclick="filterFlashcards('parmar_gk')" id="deck-btn-parmar_gk" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">Parmar Static GK</button>
+          <button onclick="filterFlashcards('maths_king')" id="deck-btn-maths_king" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">Maths King Shortcuts</button>
+        </div>
+        <span class="text-xs text-slate-400" id="flashcard-counter-badge">Card 1 of 16</span>
+      </div>
+
+      <!-- 3D Interactive Flip Card -->
+      <div id="flashcard-container" class="w-full max-w-xl mx-auto space-y-4">
+        <div id="active-flashcard" onclick="flipCurrentCard()" class="flip-card cursor-pointer w-full min-h-[220px] rounded-3xl relative">
+          <div class="flip-card-inner w-full min-h-[220px] rounded-3xl relative">
+            
+            <!-- Front Face -->
+            <div class="flip-card-front absolute inset-0 w-full h-full rounded-3xl glass-card p-6 flex flex-col justify-between border-slate-700/80 shadow-2xl">
+              <div class="flex items-center justify-between text-xs">
+                <span id="fc-deck-tag" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/30">Deck</span>
+                <span class="text-slate-400 text-[11px]">Tap card to reveal answer 🔄</span>
+              </div>
+              <div class="my-auto py-4 text-center">
+                <h3 id="fc-front-text" class="text-lg sm:text-xl font-bold text-white leading-relaxed">Loading card...</h3>
+              </div>
+              <div class="text-center text-[11px] text-slate-400">
+                Front (Question / Prompt)
+              </div>
+            </div>
+
+            <!-- Back Face -->
+            <div class="flip-card-back absolute inset-0 w-full h-full rounded-3xl glass-card-accent p-6 flex flex-col justify-between border-indigo-500/40 shadow-2xl bg-slate-900">
+              <div class="flex items-center justify-between text-xs">
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30">Explanation</span>
+                <span class="text-slate-400 text-[11px]">SM-2 Spaced Repetition</span>
+              </div>
+              <div class="my-auto py-3 text-slate-100 text-xs sm:text-sm whitespace-pre-line leading-relaxed" id="fc-back-text">
+                Answer text
+              </div>
+              <div class="text-center text-[11px] text-indigo-300">
+                Rate difficulty below to schedule next review
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SM-2 Memory Rating Action Buttons -->
+        <div class="grid grid-cols-4 gap-2 text-xs font-semibold">
+          <button onclick="handleRateCard(1)" class="py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 active:scale-95 transition flex flex-col items-center">
+            <span>Again</span>
+            <span class="text-[10px] text-rose-400 font-normal">1 Day</span>
+          </button>
+          <button onclick="handleRateCard(2)" class="py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 active:scale-95 transition flex flex-col items-center">
+            <span>Hard</span>
+            <span class="text-[10px] text-amber-400 font-normal">3 Days</span>
+          </button>
+          <button onclick="handleRateCard(3)" class="py-2.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 active:scale-95 transition flex flex-col items-center">
+            <span>Good</span>
+            <span class="text-[10px] text-sky-400 font-normal">7 Days</span>
+          </button>
+          <button onclick="handleRateCard(4)" class="py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 active:scale-95 transition flex flex-col items-center">
+            <span>Easy</span>
+            <span class="text-[10px] text-emerald-400 font-normal">14 Days</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB: MATHS KING FORMULA CODEX -->
+    <section id="view-codex" class="tab-view hidden space-y-5">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 border-amber-500/30 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div>
+            <h3 class="text-sm font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+              <span>📖</span> Maths King Instant Formula Codex
+            </h3>
+            <p class="text-xs text-slate-400">Searchable formulas & shortcuts from Nikhil Pratap Singh's book.</p>
+          </div>
+          <span class="text-xs text-amber-400 font-mono" id="codex-count-badge">Pre-Loaded</span>
+        </div>
+        <div class="relative">
+          <input type="text" id="codex-search-input" oninput="handleCodexSearch()" placeholder="Type 'Apollonius', 'Installment', 'Chord', 'Divisibility', 'Prism', 'Trig'..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-amber-400 placeholder-slate-500">
+        </div>
+      </div>
+
+      <!-- Codex Formula List -->
+      <div id="codex-list-container" class="space-y-3">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- TAB: TESTBOOK MOCKS & SCORE DELTA BRIDGE -->
     <section id="view-mocks" class="tab-view hidden space-y-6">
       
+      <!-- 118 -> 160+ SCORE GAP RECOVERY BRIDGE -->
+      <div class="glass-card-accent rounded-2xl p-4 sm:p-5 border-indigo-500/30 space-y-4" id="score-delta-bridge-card">
+        <!-- Rendered via JS -->
+      </div>
+
       <!-- New Mock Logging Card -->
       <div class="glass-card-accent rounded-2xl p-5">
         <h3 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -549,16 +719,134 @@
     </div>
   </div>
 
+  <!-- MODAL: POMODORO & AMBIENT FOCUS SOUND -->
+  <div id="modal-pomodoro" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-sm w-full rounded-3xl p-6 border-indigo-500/40 space-y-5 text-center">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>🎧</span> Focus Sprint & Ambient Sound
+        </h3>
+        <button onclick="closePomodoroModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <!-- Big Timer Display -->
+      <div>
+        <div class="text-4xl sm:text-5xl font-mono font-bold text-indigo-400 tracking-wider my-2" id="pomodoro-timer-display">
+          25:00
+        </div>
+        <div class="flex justify-center space-x-2 text-xs font-semibold mt-3">
+          <button onclick="setPomodoroMinutes(15)" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">15m</button>
+          <button onclick="setPomodoroMinutes(25)" class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white">25m</button>
+          <button onclick="setPomodoroMinutes(50)" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">50m</button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex justify-center space-x-3">
+        <button onclick="startPomodoro()" id="btn-pomo-play" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 active:scale-95 transition">
+          ▶ Start Focus
+        </button>
+        <button onclick="pausePomodoro()" id="btn-pomo-pause" class="hidden px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs active:scale-95 transition">
+          ⏸ Pause
+        </button>
+        <button onclick="resetPomodoro()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">
+          🔄 Reset
+        </button>
+      </div>
+
+      <!-- Synthesized Ambient Sound Toggles -->
+      <div class="pt-3 border-t border-slate-800 text-xs">
+        <div class="text-slate-400 mb-2 font-medium">Synthesized Focus Audio (No internet needed)</div>
+        <div class="grid grid-cols-2 gap-2 font-semibold">
+          <button onclick="toggleRainSound()" id="btn-ambient-rain" class="py-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700/80 active:scale-95 transition flex items-center justify-center space-x-1">
+            <span>🌧️</span> <span>Rain Sound</span>
+          </button>
+          <button onclick="toggleBinauralSound()" id="btn-ambient-focus" class="py-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700/80 active:scale-95 transition flex items-center justify-center space-x-1">
+            <span>🧠</span> <span>40Hz Gamma</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORPORATE DISGUISE SCREEN (Excel / Jira Boss Screen-Saver) -->
+  <div id="corporate-disguise-overlay" class="fixed inset-0 z-50 bg-[#1e1e1e] text-slate-300 font-mono hidden flex flex-col text-xs overflow-auto">
+    <!-- Green Excel Header -->
+    <div class="bg-[#107c41] text-white px-3 py-1.5 flex items-center justify-between text-[11px] font-sans">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold">📊 Excel</span>
+        <span class="text-slate-200">| Q4_Enterprise_Resource_Allocation_Master.xlsx - Autosaved</span>
+      </div>
+      <button onclick="toggleCorporateDisguise()" class="bg-black/30 hover:bg-black/50 px-2 py-0.5 rounded text-[10px] text-white">Exit Disguise (ESC)</button>
+    </div>
+    <!-- Ribbon Menu Bar -->
+    <div class="bg-[#2d2d2d] border-b border-[#3e3e3e] px-3 py-1 flex space-x-4 text-[11px] text-slate-300">
+      <span>File</span><span class="text-emerald-400 border-b-2 border-emerald-400">Home</span><span>Insert</span><span>Formulas</span><span>Data</span><span>Review</span>
+    </div>
+    <!-- Formula Bar -->
+    <div class="bg-[#252526] border-b border-[#3e3e3e] px-3 py-1 flex items-center space-x-2 text-[11px]">
+      <span class="text-slate-400 font-bold">fx</span>
+      <span class="text-emerald-300">=VLOOKUP(DEPT_ID, Q4_DELIVERABLES, 3, FALSE)</span>
+    </div>
+    <!-- Spreadsheet Grid -->
+    <div class="flex-1 overflow-auto p-2 bg-[#1e1e1e]">
+      <table class="w-full border-collapse border border-[#3e3e3e] text-left text-[11px]">
+        <thead>
+          <tr class="bg-[#2d2d2d] text-slate-300">
+            <th class="border border-[#3e3e3e] p-1.5 w-12 text-center">Row</th>
+            <th class="border border-[#3e3e3e] p-1.5 w-28">Sprint_Ticket</th>
+            <th class="border border-[#3e3e3e] p-1.5">Operational_Task_Description</th>
+            <th class="border border-[#3e3e3e] p-1.5 w-24">Assignee</th>
+            <th class="border border-[#3e3e3e] p-1.5 w-24">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#2d2d2d]">
+          <tr>
+            <td class="border border-[#3e3e3e] p-1.5 text-center text-slate-500">1</td>
+            <td class="border border-[#3e3e3e] p-1.5 font-bold text-indigo-400">MATH-102</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-slate-200">Apollonius Theorem Formula: AB² + AC² = 2(AD² + BD²) for median AD</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-emerald-400">Vamsi</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-amber-300">In Progress</td>
+          </tr>
+          <tr>
+            <td class="border border-[#3e3e3e] p-1.5 text-center text-slate-500">2</td>
+            <td class="border border-[#3e3e3e] p-1.5 font-bold text-indigo-400">ENG-409</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-slate-200">Blackbook Vocab: Ephemeral (transient, lasting short duration)</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-emerald-400">Vamsi</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-emerald-400">Verified</td>
+          </tr>
+          <tr>
+            <td class="border border-[#3e3e3e] p-1.5 text-center text-slate-500">3</td>
+            <td class="border border-[#3e3e3e] p-1.5 font-bold text-indigo-400">GOV-201</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-slate-200">Polity Schedule 8: 92nd Amendment (2003) added B-D-M-S Languages</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-emerald-400">Vamsi</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-sky-400">Pending Review</td>
+          </tr>
+          <tr>
+            <td class="border border-[#3e3e3e] p-1.5 text-center text-slate-500">4</td>
+            <td class="border border-[#3e3e3e] p-1.5 font-bold text-indigo-400">MATH-104</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-slate-200">Compound Interest 2-yr installment: P = x/(1+R/100) + x/(1+R/100)²</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-emerald-400">Vamsi</td>
+            <td class="border border-[#3e3e3e] p-1.5 text-emerald-400">Complete</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm pointer-events-none"></div>
 
   <!-- APP SCRIPTS -->
+  <script src="flashcards-data.js"></script>
   <script src="syllabus-data.js"></script>
   <script src="app.js"></script>
   <script>
     // Tab switching controller
     let currentTab = 'cockpit';
     let currentSyllabusFilter = 'quant';
+    let currentFlashcardDeck = 'all';
+    let currentFlashcardIndex = 0;
     let selectedOfficeHoursVal = 1.5;
 
     function switchTab(tabId) {
@@ -593,7 +881,9 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabId === 'syllabus') renderSyllabus();
-      if (tabId === 'mocks') renderMocks();
+      if (tabId === 'flashcards') renderFlashcardDeck();
+      if (tabId === 'codex') renderCodexList();
+      if (tabId === 'mocks') { renderScoreDeltaBridge(); renderMocks(); }
       if (tabId === 'mistakes') renderMistakes();
       if (tabId === 'scratchpad') loadScratchpad();
     }
@@ -963,6 +1253,164 @@
       }
     }
 
+    // Pomodoro Modal Handlers
+    function openPomodoroModal() {
+      document.getElementById('modal-pomodoro').classList.remove('hidden');
+    }
+    function closePomodoroModal() {
+      document.getElementById('modal-pomodoro').classList.add('hidden');
+    }
+
+    // SSC CGL 2027 Live Countdown
+    function updateCountdownTimer() {
+      const targetDate = new Date("2027-09-15T09:00:00+05:30").getTime();
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        const el = document.getElementById("cgl-countdown-timer");
+        if (el) el.innerText = "EXAM COMMENCED!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      const el = document.getElementById("cgl-countdown-timer");
+      if (el) {
+        el.innerText = `${days}d : ${String(hours).padStart(2, '0')}h : ${String(minutes).padStart(2, '0')}m : ${String(seconds).padStart(2, '0')}s`;
+      }
+    }
+
+    // Flashcard Render & Interaction
+    function filterFlashcards(deck) {
+      currentFlashcardDeck = deck;
+      currentFlashcardIndex = 0;
+      document.querySelectorAll('.deck-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-400');
+      });
+      const activeBtn = document.getElementById(`deck-btn-${deck}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
+      }
+      renderFlashcardDeck();
+    }
+
+    function renderFlashcardDeck() {
+      const cards = appState.flashcards.filter(c => currentFlashcardDeck === 'all' || c.deck === currentFlashcardDeck);
+      const cardEl = document.getElementById('active-flashcard');
+      if (cardEl) cardEl.classList.remove('flipped');
+
+      if (cards.length === 0) {
+        document.getElementById('fc-front-text').innerText = "🎉 All caught up in this deck!";
+        document.getElementById('fc-back-text').innerText = "No due flashcards right now. Great job!";
+        document.getElementById('flashcard-counter-badge').innerText = "0 Cards";
+        return;
+      }
+
+      const safeIndex = currentFlashcardIndex % cards.length;
+      const card = cards[safeIndex];
+
+      document.getElementById('fc-deck-tag').innerText = card.deck === 'blackbook' ? 'Blackbook Vocab' : card.deck === 'parmar_gk' ? 'Parmar Static GK' : 'Maths King';
+      document.getElementById('fc-front-text').innerText = card.front;
+      document.getElementById('fc-back-text').innerText = card.back;
+      document.getElementById('flashcard-counter-badge').innerText = `Card ${safeIndex + 1} of ${cards.length}`;
+    }
+
+    function flipCurrentCard() {
+      const el = document.getElementById('active-flashcard');
+      if (el) el.classList.toggle('flipped');
+    }
+
+    function handleRateCard(grade) {
+      const cards = appState.flashcards.filter(c => currentFlashcardDeck === 'all' || c.deck === currentFlashcardDeck);
+      if (cards.length === 0) return;
+      const card = cards[currentFlashcardIndex % cards.length];
+      gradeFlashcard(card.id, grade);
+      currentFlashcardIndex++;
+      renderFlashcardDeck();
+    }
+
+    // Maths King Formula Codex
+    function renderCodexList(items = searchCodex()) {
+      const container = document.getElementById('codex-list-container');
+      if (!container) return;
+      if (items.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-xs py-4 text-center">No formula matched your search query.</p>`;
+        return;
+      }
+      container.innerHTML = items.map(f => `
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-amber-500 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-100 text-sm">${f.title}</span>
+            <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono text-[10px] font-semibold border border-amber-500/20">${f.category}</span>
+          </div>
+          <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-200 whitespace-pre-line leading-relaxed">
+${f.formula}
+          </div>
+          ${f.notes ? `<p class="text-[11px] text-slate-400">💡 <strong>Maths King Tip:</strong> ${f.notes}</p>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function handleCodexSearch() {
+      const q = document.getElementById('codex-search-input').value;
+      const results = searchCodex(q);
+      renderCodexList(results);
+    }
+
+    // 118 -> 160+ Score Delta Recovery Bridge
+    function renderScoreDeltaBridge() {
+      const bridge = getScoreGapBridge();
+      const container = document.getElementById('score-delta-bridge-card');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          <div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono font-semibold">118 ➔ 168 SCORE RECOVERY BRIDGE</span>
+            <h3 class="font-bold text-slate-100 text-sm sm:text-base mt-1">Oct 6 Baseline (118) ➔ CGL 2027 Top 4600 GP Target (168)</h3>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400">Latest Score:</span> <strong class="text-amber-400 text-base font-bold">${bridge.currentTotal}</strong> / 200
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-slate-300">Target Gap Recovery: ${bridge.progressPercent}% Closed</span>
+            <span class="text-indigo-400">${bridge.marksNeeded} Marks to Recover</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: ${bridge.progressPercent}%"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+          <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[10px]">Quant</div>
+            <div class="font-bold text-slate-200">${bridge.subjects.math.current} / 50 <span class="text-amber-400 font-normal">➔ 46</span></div>
+          </div>
+          <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[10px]">Reasoning</div>
+            <div class="font-bold text-slate-200">${bridge.subjects.reasoning.current} / 50 <span class="text-amber-400 font-normal">➔ 48</span></div>
+          </div>
+          <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[10px]">English</div>
+            <div class="font-bold text-slate-200">${bridge.subjects.english.current} / 50 <span class="text-amber-400 font-normal">➔ 44</span></div>
+          </div>
+          <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[10px]">General Awareness</div>
+            <div class="font-bold text-slate-200">${bridge.subjects.gk.current} / 50 <span class="text-rose-400 font-normal">➔ 30</span></div>
+          </div>
+        </div>
+      `;
+    }
+
     // MAIN RENDER APP FUNCTION
     function renderApp() {
       // 1. Rank & XP update
@@ -1044,6 +1492,22 @@
       rolloverUnfinishedTasks();
       renderApp();
       loadScratchpad();
+      renderFlashcardDeck();
+      renderCodexList();
+      renderScoreDeltaBridge();
+      updateCountdownTimer();
+      setInterval(updateCountdownTimer, 1000);
+
+      // ESC key listener for quick exit from disguise or modals
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (appState.disguiseMode) toggleCorporateDisguise();
+          closePomodoroModal();
+          closeOfficeModal();
+          closeBacklogDrawer();
+          closeSyncModal();
+        }
+      });
 
       // Register Service Worker if supported
       if ('serviceWorker' in navigator) {

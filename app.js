@@ -25,6 +25,9 @@ function getInitialState() {
     backlog: [],
     officeBonusHours: 0,
     officeNotes: "",
+    energyLevel: "high", // 'high' | 'medium' | 'low'
+    disguiseMode: false,
+    flashcards: typeof DEFAULT_FLASHCARDS !== 'undefined' ? JSON.parse(JSON.stringify(DEFAULT_FLASHCARDS)) : [],
     syllabus: JSON.parse(JSON.stringify(DEFAULT_SYLLABUS)),
     mocks: [
       {
@@ -82,6 +85,10 @@ function loadState() {
     const parsed = JSON.parse(saved);
     // Merge default syllabus items if missing
     if (!parsed.syllabus) parsed.syllabus = JSON.parse(JSON.stringify(DEFAULT_SYLLABUS));
+    if (!parsed.flashcards || parsed.flashcards.length === 0) {
+      parsed.flashcards = typeof DEFAULT_FLASHCARDS !== 'undefined' ? JSON.parse(JSON.stringify(DEFAULT_FLASHCARDS)) : [];
+    }
+    if (!parsed.energyLevel) parsed.energyLevel = "high";
     return parsed;
   } catch (e) {
     console.error("State parse error, fallback to initial", e);
@@ -616,3 +623,393 @@ function showToast(message, type = "info") {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// ==========================================
+// 1. SM-2 SPACED REPETITION FLASHCARD ENGINE
+// ==========================================
+function gradeFlashcard(cardId, gradeQuality) {
+  // gradeQuality: 1 = Again, 2 = Hard, 3 = Good, 4 = Easy
+  const card = appState.flashcards.find(c => c.id === cardId);
+  if (!card) return;
+
+  if (gradeQuality < 3) {
+    card.repetition = 0;
+    card.interval = 1;
+  } else {
+    if (card.repetition === 0) {
+      card.interval = 1;
+    } else if (card.repetition === 1) {
+      card.interval = gradeQuality === 4 ? 6 : 3;
+    } else {
+      card.interval = Math.round(card.interval * card.easeFactor);
+    }
+    card.repetition += 1;
+  }
+
+  // SM-2 Ease Factor calculation
+  card.easeFactor = Math.max(1.3, card.easeFactor + (0.1 - (4 - gradeQuality) * (0.08 + (4 - gradeQuality) * 0.02)));
+
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + card.interval);
+  card.dueDate = nextDate.toISOString().split("T")[0];
+
+  addXP(gradeQuality >= 3 ? 15 : 5, `Flashcard Review`);
+  saveState();
+  if (typeof renderFlashcardDeck === 'function') renderFlashcardDeck();
+}
+
+function addNewFlashcard(deck, front, back) {
+  const newCard = {
+    id: "fc-user-" + Date.now(),
+    deck: deck,
+    front: front,
+    back: back,
+    interval: 1,
+    repetition: 0,
+    easeFactor: 2.5,
+    dueDate: new Date().toISOString().split("T")[0]
+  };
+  appState.flashcards.unshift(newCard);
+  addXP(20, `Created Flashcard`);
+  saveState();
+  showToast("✅ Flashcard added to deck!", "success");
+  if (typeof renderFlashcardDeck === 'function') renderFlashcardDeck();
+}
+
+// ==========================================
+// 2. COMMUTE & METRO VOICE AUDIO-POD (TTS)
+// ==========================================
+let commuteAudioActive = false;
+let commuteCardIndex = 0;
+let commuteTimeoutId = null;
+
+function startCommuteAudio(deck = 'all') {
+  if (!('speechSynthesis' in window)) {
+    showToast("❌ Speech synthesis not supported in this browser.", "error");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  commuteAudioActive = true;
+  commuteCardIndex = 0;
+  updateCommuteStatusUI(true);
+  playNextCommuteCard(deck);
+  showToast("🎧 Commute Voice Mode started! Put earphones in.", "success");
+}
+
+function stopCommuteAudio() {
+  commuteAudioActive = false;
+  if (commuteTimeoutId) clearTimeout(commuteTimeoutId);
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  updateCommuteStatusUI(false);
+  showToast("⏹️ Commute Voice Mode stopped.", "info");
+}
+
+function toggleCommuteAudio() {
+  if (commuteAudioActive) stopCommuteAudio();
+  else startCommuteAudio();
+}
+
+function playNextCommuteCard(deck = 'all') {
+  if (!commuteAudioActive) return;
+  const cards = appState.flashcards.filter(c => deck === 'all' || c.deck === deck);
+  if (cards.length === 0) {
+    stopCommuteAudio();
+    return;
+  }
+
+  const card = cards[commuteCardIndex % cards.length];
+  commuteCardIndex++;
+
+  const cleanFront = card.front.replace(/[\(\)\#\*\•]/g, ' ').trim();
+  const cleanBack = card.back.split('\n')[0].replace(/[\(\)\#\*\•]/g, ' ').trim();
+
+  const utteranceFront = new SpeechSynthesisUtterance("Question: " + cleanFront);
+  utteranceFront.rate = 0.95;
+  utteranceFront.pitch = 1.0;
+
+  utteranceFront.onend = () => {
+    if (!commuteAudioActive) return;
+    commuteTimeoutId = setTimeout(() => {
+      if (!commuteAudioActive) return;
+      const utteranceBack = new SpeechSynthesisUtterance("Answer: " + cleanBack);
+      utteranceBack.rate = 0.95;
+      utteranceBack.onend = () => {
+        if (!commuteAudioActive) return;
+        commuteTimeoutId = setTimeout(() => {
+          playNextCommuteCard(deck);
+        }, 3000);
+      };
+      window.speechSynthesis.speak(utteranceBack);
+    }, 4000); // 4-second recall pause
+  };
+
+  window.speechSynthesis.speak(utteranceFront);
+}
+
+function updateCommuteStatusUI(active) {
+  const btn = document.getElementById("commute-audio-toggle-btn");
+  if (btn) {
+    if (active) {
+      btn.innerHTML = `<span>⏹️</span><span>Stop Audio-Pod</span>`;
+      btn.classList.add("bg-rose-600");
+      btn.classList.remove("bg-indigo-600");
+    } else {
+      btn.innerHTML = `<span>🎧</span><span>Start Audio-Pod</span>`;
+      btn.classList.remove("bg-rose-600");
+      btn.classList.add("bg-indigo-600");
+    }
+  }
+}
+
+// ==========================================
+// 3. SYNTHESIZED AMBIENT SOUND (RAIN & 40Hz)
+// ==========================================
+let ambientAudioCtx = null;
+let rainNode = null;
+let binauralOsc1 = null;
+let binauralOsc2 = null;
+let isRainPlaying = false;
+let isBinauralPlaying = false;
+
+function toggleRainSound() {
+  if (isRainPlaying) stopRainSound();
+  else startRainSound();
+  updateAmbientSoundUI();
+}
+
+function startRainSound() {
+  try {
+    if (!ambientAudioCtx) ambientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ambientAudioCtx.state === 'suspended') ambientAudioCtx.resume();
+
+    const bufferSize = ambientAudioCtx.sampleRate * 2;
+    const noiseBuffer = ambientAudioCtx.createBuffer(1, bufferSize, ambientAudioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      output[i] = (lastOut + 0.02 * white) / 1.02; // Pink rain noise
+      lastOut = output[i];
+      output[i] *= 3.0;
+    }
+    const whiteNoise = ambientAudioCtx.createBufferSource();
+    whiteNoise.buffer = noiseBuffer;
+    whiteNoise.loop = true;
+
+    const filter = ambientAudioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(750, ambientAudioCtx.currentTime);
+
+    const gain = ambientAudioCtx.createGain();
+    gain.gain.setValueAtTime(0.06, ambientAudioCtx.currentTime);
+
+    whiteNoise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ambientAudioCtx.destination);
+    whiteNoise.start();
+
+    rainNode = { source: whiteNoise, gain: gain };
+    isRainPlaying = true;
+    showToast("🌧️ Gentle Rain ambient sound active.", "info");
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function stopRainSound() {
+  if (rainNode) {
+    rainNode.source.stop();
+    rainNode = null;
+  }
+  isRainPlaying = false;
+  showToast("🌧️ Rain sound stopped.", "info");
+}
+
+function toggleBinauralSound() {
+  if (isBinauralPlaying) stopBinauralSound();
+  else startBinauralSound();
+  updateAmbientSoundUI();
+}
+
+function startBinauralSound() {
+  try {
+    if (!ambientAudioCtx) ambientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ambientAudioCtx.state === 'suspended') ambientAudioCtx.resume();
+
+    binauralOsc1 = ambientAudioCtx.createOscillator();
+    binauralOsc2 = ambientAudioCtx.createOscillator();
+    const gain1 = ambientAudioCtx.createGain();
+    const gain2 = ambientAudioCtx.createGain();
+
+    binauralOsc1.type = "sine";
+    binauralOsc1.frequency.setValueAtTime(200, ambientAudioCtx.currentTime);
+    gain1.gain.setValueAtTime(0.035, ambientAudioCtx.currentTime);
+
+    binauralOsc2.type = "sine";
+    binauralOsc2.frequency.setValueAtTime(240, ambientAudioCtx.currentTime);
+    gain2.gain.setValueAtTime(0.035, ambientAudioCtx.currentTime);
+
+    binauralOsc1.connect(gain1);
+    gain1.connect(ambientAudioCtx.destination);
+    binauralOsc2.connect(gain2);
+    gain2.connect(ambientAudioCtx.destination);
+
+    binauralOsc1.start();
+    binauralOsc2.start();
+    isBinauralPlaying = true;
+    showToast("🧠 40Hz Gamma Focus sound active.", "info");
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function stopBinauralSound() {
+  if (binauralOsc1) { binauralOsc1.stop(); binauralOsc1 = null; }
+  if (binauralOsc2) { binauralOsc2.stop(); binauralOsc2 = null; }
+  isBinauralPlaying = false;
+  showToast("🧠 Focus sound stopped.", "info");
+}
+
+function updateAmbientSoundUI() {
+  const rainBtn = document.getElementById("btn-ambient-rain");
+  if (rainBtn) {
+    if (isRainPlaying) {
+      rainBtn.classList.add("bg-sky-600", "text-white");
+      rainBtn.classList.remove("bg-slate-800", "text-slate-300");
+    } else {
+      rainBtn.classList.remove("bg-sky-600", "text-white");
+      rainBtn.classList.add("bg-slate-800", "text-slate-300");
+    }
+  }
+  const focusBtn = document.getElementById("btn-ambient-focus");
+  if (focusBtn) {
+    if (isBinauralPlaying) {
+      focusBtn.classList.add("bg-indigo-600", "text-white");
+      focusBtn.classList.remove("bg-slate-800", "text-slate-300");
+    } else {
+      focusBtn.classList.remove("bg-indigo-600", "text-white");
+      focusBtn.classList.add("bg-slate-800", "text-slate-300");
+    }
+  }
+}
+
+// ==========================================
+// 4. POMODORO TIMER ENGINE
+// ==========================================
+let pomodoroTimerId = null;
+let pomodoroSecondsLeft = 25 * 60;
+let pomodoroRunning = false;
+
+function setPomodoroMinutes(mins) {
+  pausePomodoro();
+  pomodoroSecondsLeft = mins * 60;
+  updatePomodoroDisplay();
+}
+
+function startPomodoro() {
+  if (pomodoroRunning) return;
+  pomodoroRunning = true;
+  document.getElementById("btn-pomo-play")?.classList.add("hidden");
+  document.getElementById("btn-pomo-pause")?.classList.remove("hidden");
+
+  pomodoroTimerId = setInterval(() => {
+    if (pomodoroSecondsLeft > 0) {
+      pomodoroSecondsLeft--;
+      updatePomodoroDisplay();
+    } else {
+      pausePomodoro();
+      playChime("levelUp");
+      addXP(50, "Deep Focus Pomodoro Sprint");
+      showToast("🎉 Focus sprint completed! +50 XP", "success");
+    }
+  }, 1000);
+}
+
+function pausePomodoro() {
+  pomodoroRunning = false;
+  if (pomodoroTimerId) clearInterval(pomodoroTimerId);
+  document.getElementById("btn-pomo-play")?.classList.remove("hidden");
+  document.getElementById("btn-pomo-pause")?.classList.add("hidden");
+}
+
+function resetPomodoro() {
+  pausePomodoro();
+  pomodoroSecondsLeft = 25 * 60;
+  updatePomodoroDisplay();
+}
+
+function updatePomodoroDisplay() {
+  const m = Math.floor(pomodoroSecondsLeft / 60);
+  const s = pomodoroSecondsLeft % 60;
+  const str = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  const el = document.getElementById("pomodoro-timer-display");
+  if (el) el.innerText = str;
+}
+
+// ==========================================
+// 5. SCORE GAP BRIDGE (118 -> 160+)
+// ==========================================
+function getScoreGapBridge() {
+  const latestMock = appState.mocks[0] || { mathScore: 32, reasoningScore: 41, englishScore: 34, gkScore: 11, score: 118 };
+  
+  const subjects = {
+    math: { current: latestMock.mathScore || 32, target: 46, base: 32 },
+    reasoning: { current: latestMock.reasoningScore || 41, target: 48, base: 41 },
+    english: { current: latestMock.englishScore || 34, target: 44, base: 34 },
+    gk: { current: latestMock.gkScore || 11, target: 30, base: 11 }
+  };
+
+  const currentTotal = latestMock.score || 118;
+  const targetTotal = 168;
+  const marksNeeded = Math.max(0, targetTotal - currentTotal);
+  const progressPercent = Math.min(100, Math.max(0, Math.round(((currentTotal - 118) / (168 - 118)) * 100)));
+
+  return { subjects, currentTotal, targetTotal, marksNeeded, progressPercent };
+}
+
+// ==========================================
+// 6. FATIGUE-ADAPTIVE ENERGY SCHEDULER
+// ==========================================
+function setEnergyLevel(level) {
+  appState.energyLevel = level;
+  if (level === "low") {
+    appState.settings.energyMode = "mvd";
+  } else {
+    appState.settings.energyMode = "normal";
+  }
+  saveState();
+  appState.lastGeneratedDate = null; // force regen
+  generateDailyTasks(getCalendarDayInfo(), appState.settings.energyMode);
+  renderApp();
+  showToast(`🔋 Energy set to ${level.toUpperCase()}. Today's tasks adapted.`, "info");
+}
+
+// ==========================================
+// 7. CORPORATE DISGUISE MODE
+// ==========================================
+function toggleCorporateDisguise() {
+  appState.disguiseMode = !appState.disguiseMode;
+  const overlay = document.getElementById("corporate-disguise-overlay");
+  if (overlay) {
+    if (appState.disguiseMode) {
+      overlay.classList.remove("hidden");
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+}
+
+// ==========================================
+// 8. FORMULA CODEX SEARCH
+// ==========================================
+function searchCodex(query = "") {
+  if (typeof FORMULA_CODEX === 'undefined') return [];
+  const q = query.toLowerCase().trim();
+  if (!q) return FORMULA_CODEX;
+  return FORMULA_CODEX.filter(item => 
+    item.title.toLowerCase().includes(q) ||
+    item.keywords.toLowerCase().includes(q) ||
+    item.category.toLowerCase().includes(q)
+  );
+}
+
