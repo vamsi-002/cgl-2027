@@ -1,5 +1,5 @@
 // Service Worker for Vamsi CGL 2027 Tracker
-const CACHE_NAME = 'vamsi-cgl-v5';
+const CACHE_NAME = 'vamsi-cgl-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,9 @@ const ASSETS = [
   './flashcards-data.js',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './decks/deck-registry.json',
+  './decks/polity-constitution-pack.json'
 ];
 
 self.addEventListener('install', event => {
@@ -34,7 +36,14 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+      if (response) return response;
+      return fetch(event.request).then(networkResponse => {
+        if (event.request.url.includes('/decks/')) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return networkResponse;
+      });
     }).catch(() => {
       return caches.match('./index.html');
     })

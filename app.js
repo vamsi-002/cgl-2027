@@ -1055,3 +1055,181 @@ function searchCodex(query = "") {
   );
 }
 
+// ==========================================
+// 9. CLOUD DECK STORE & MODULAR INGESTION
+// ==========================================
+async function openDeckStoreModal() {
+  const modal = document.getElementById('modal-deck-store');
+  if (modal) modal.classList.remove('hidden');
+  renderDeckStore();
+}
+
+function closeDeckStoreModal() {
+  const modal = document.getElementById('modal-deck-store');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function renderDeckStore() {
+  const container = document.getElementById('deck-store-list');
+  if (!container) return;
+
+  container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Loading available cloud packs...</div>`;
+
+  try {
+    const res = await fetch('decks/deck-registry.json');
+    if (!res.ok) throw new Error("Could not fetch registry");
+    const packs = await res.json();
+
+    if (!appState.installedPacks) appState.installedPacks = [];
+
+    container.innerHTML = packs.map(pack => {
+      const isInstalled = appState.installedPacks.includes(pack.id);
+      return `
+        <div class="glass-card rounded-2xl p-4 border border-slate-700/80 space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h4 class="text-sm font-bold text-white">${pack.title}</h4>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30 font-semibold">${pack.badge}</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-1 leading-relaxed">${pack.description}</p>
+              <div class="flex items-center space-x-3 text-[11px] text-slate-400 mt-2">
+                <span>📁 Category: <strong class="text-indigo-300">${pack.category}</strong></span>
+                <span>💾 Size: ${pack.size}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end pt-1">
+            <button onclick="installDeckPack('${pack.id}', '${pack.file}')" id="btn-pack-${pack.id}" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+              isInstalled 
+                ? 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30' 
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 active:scale-95'
+            }">
+              <span>${isInstalled ? '✅' : '⬇️'}</span>
+              <span>${isInstalled ? 'Installed (Tap to Re-sync)' : 'Download Pack'}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error("Registry load error:", err);
+    container.innerHTML = `
+      <div class="glass-card rounded-2xl p-4 text-center text-rose-300 text-xs space-y-2">
+        <p>⚠️ Could not connect to online registry.</p>
+        <p class="text-[11px] text-slate-400">Make sure the 'decks/' folder is uploaded to your GitHub repository.</p>
+      </div>
+    `;
+  }
+}
+
+async function installDeckPack(packId, packFile) {
+  const btn = document.getElementById(`btn-pack-${packId}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳</span><span>Downloading...</span>`;
+  }
+
+  try {
+    const res = await fetch(packFile);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const newCards = await res.json();
+
+    if (!Array.isArray(newCards) || newCards.length === 0) {
+      throw new Error("Invalid pack format");
+    }
+
+    // Merge cards into appState.flashcards without duplicates
+    const existingIds = new Set(appState.flashcards.map(c => c.id));
+    let addedCount = 0;
+    for (const card of newCards) {
+      if (!existingIds.has(card.id)) {
+        appState.flashcards.push(card);
+        addedCount++;
+      } else {
+        const idx = appState.flashcards.findIndex(c => c.id === card.id);
+        if (idx !== -1) {
+          appState.flashcards[idx].front = card.front;
+          appState.flashcards[idx].back = card.back;
+        }
+      }
+    }
+
+    if (!appState.installedPacks) appState.installedPacks = [];
+    if (!appState.installedPacks.includes(packId)) {
+      appState.installedPacks.push(packId);
+    }
+
+    saveState();
+    addXP(50, `Installed ${packId}`);
+    showToast(`🎉 Installed ${addedCount} new cards successfully! Ready offline.`, "success");
+
+    renderDeckStore();
+    if (typeof filterFlashcards === 'function') filterFlashcards('parmar_polity');
+    closeDeckStoreModal();
+  } catch (err) {
+    console.error("Pack install failed:", err);
+    showToast(`❌ Failed to download pack: ${err.message}`, "error");
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>⬇️</span><span>Retry Download</span>`;
+    }
+  }
+}
+
+function handleCustomDeckImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const content = e.target.result;
+      let importedCards = [];
+
+      if (file.name.endsWith('.json')) {
+        importedCards = JSON.parse(content);
+      } else if (file.name.endsWith('.csv') || file.name.endsWith('.tsv') || file.name.endsWith('.txt')) {
+        const lines = content.split('\n');
+        const sep = file.name.endsWith('.tsv') ? '\t' : ',';
+        importedCards = lines.filter(l => l.trim().length > 0).map((l, idx) => {
+          const parts = l.split(sep);
+          return {
+            id: `imported-${Date.now()}-${idx}`,
+            deck: "custom_import",
+            category: "Imported Deck",
+            front: parts[0] ? parts[0].trim().replace(/^"|"$/g, '') : 'Question',
+            back: parts[1] ? parts.slice(1).join(sep).trim().replace(/^"|"$/g, '') : 'Answer',
+            interval: 1, repetition: 0, easeFactor: 2.5, dueDate: new Date().toISOString().split("T")[0]
+          };
+        });
+      }
+
+      if (!Array.isArray(importedCards) || importedCards.length === 0) {
+        showToast("❌ No valid cards found in file.", "error");
+        return;
+      }
+
+      const existingIds = new Set(appState.flashcards.map(c => c.id));
+      let count = 0;
+      for (const card of importedCards) {
+        if (!card.id) card.id = `imported-${Date.now()}-${count}`;
+        if (!card.deck) card.deck = 'custom_import';
+        if (!existingIds.has(card.id)) {
+          appState.flashcards.push(card);
+          count++;
+        }
+      }
+
+      saveState();
+      addXP(50, `Imported ${count} flashcards`);
+      showToast(`🎉 Imported ${count} cards from file!`, "success");
+      closeDeckStoreModal();
+      if (typeof filterFlashcards === 'function') filterFlashcards('all');
+    } catch (err) {
+      showToast(`❌ Import error: ${err.message}`, "error");
+    }
+  };
+  reader.readAsText(file);
+}
+
