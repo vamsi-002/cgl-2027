@@ -85,8 +85,21 @@ function loadState() {
     const parsed = JSON.parse(saved);
     // Merge default syllabus items if missing
     if (!parsed.syllabus) parsed.syllabus = JSON.parse(JSON.stringify(DEFAULT_SYLLABUS));
-    if (!parsed.flashcards || parsed.flashcards.length === 0) {
-      parsed.flashcards = typeof DEFAULT_FLASHCARDS !== 'undefined' ? JSON.parse(JSON.stringify(DEFAULT_FLASHCARDS)) : [];
+    
+    // Smart merge flashcards: Ensure newly added DEFAULT_FLASHCARDS are available
+    if (typeof DEFAULT_FLASHCARDS !== 'undefined' && Array.isArray(DEFAULT_FLASHCARDS)) {
+      if (!parsed.flashcards || parsed.flashcards.length === 0) {
+        parsed.flashcards = JSON.parse(JSON.stringify(DEFAULT_FLASHCARDS));
+      } else {
+        const existingIds = new Set(parsed.flashcards.map(c => c.id));
+        let addedCount = 0;
+        for (const defCard of DEFAULT_FLASHCARDS) {
+          if (!existingIds.has(defCard.id)) {
+            parsed.flashcards.push(JSON.parse(JSON.stringify(defCard)));
+            addedCount++;
+          }
+        }
+      }
     }
     if (!parsed.energyLevel) parsed.energyLevel = "high";
     return parsed;
@@ -711,7 +724,12 @@ function toggleCommuteAudio() {
 
 function playNextCommuteCard(deck = 'all') {
   if (!commuteAudioActive) return;
-  const cards = appState.flashcards.filter(c => deck === 'all' || c.deck === deck);
+  const cards = appState.flashcards.filter(c => {
+    if (!deck || deck === 'all') return true;
+    if (deck === 'blackbook') return c.deck.startsWith('blackbook');
+    if (deck === 'parmar_gk') return c.deck.startsWith('parmar');
+    return c.deck === deck;
+  });
   if (cards.length === 0) {
     stopCommuteAudio();
     return;
@@ -759,6 +777,30 @@ function updateCommuteStatusUI(active) {
       btn.classList.add("bg-indigo-600");
     }
   }
+}
+
+function speakSingleCard(cardId) {
+  if (!('speechSynthesis' in window)) {
+    showToast("❌ Speech synthesis not supported in this browser.", "error");
+    return;
+  }
+  const card = appState.flashcards.find(c => c.id === cardId);
+  if (!card) return;
+  window.speechSynthesis.cancel();
+  const cleanFront = card.front.replace(/[\(\)\#\*\•]/g, ' ').trim();
+  const cleanBack = card.back.split('\n')[0].replace(/[\(\)\#\*\•]/g, ' ').trim();
+
+  const uttFront = new SpeechSynthesisUtterance("Question: " + cleanFront);
+  uttFront.rate = 0.95;
+  uttFront.onend = () => {
+    setTimeout(() => {
+      const uttBack = new SpeechSynthesisUtterance("Answer: " + cleanBack);
+      uttBack.rate = 0.95;
+      window.speechSynthesis.speak(uttBack);
+    }, 1000);
+  };
+  window.speechSynthesis.speak(uttFront);
+  showToast("🎧 Reading aloud...", "info");
 }
 
 // ==========================================

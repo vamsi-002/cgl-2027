@@ -377,43 +377,84 @@
         </div>
       </div>
 
-      <!-- Deck Filter Pills & Status -->
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-          <button onclick="filterFlashcards('all')" id="deck-btn-all" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition">All Cards</button>
-          <button onclick="filterFlashcards('blackbook')" id="deck-btn-blackbook" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">Blackbook Vocab</button>
-          <button onclick="filterFlashcards('parmar_gk')" id="deck-btn-parmar_gk" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">Parmar Static GK</button>
-          <button onclick="filterFlashcards('maths_king')" id="deck-btn-maths_king" class="deck-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">Maths King Shortcuts</button>
+      <!-- Mode Switcher: 3D Flip Card vs Pocket Reader Mode -->
+      <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 p-1.5 rounded-2xl">
+        <div class="flex items-center space-x-1 w-full">
+          <button onclick="setFlashcardMode('flip')" id="fc-mode-btn-flip" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+            <span>🃏</span>
+            <span>Flip Card Mode</span>
+          </button>
+          <button onclick="setFlashcardMode('reader')" id="fc-mode-btn-reader" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-slate-800 text-slate-400 hover:text-white">
+            <span>📖</span>
+            <span>Pocket Reader Mode</span>
+          </button>
         </div>
-        <span class="text-xs text-slate-400" id="flashcard-counter-badge">Card 1 of 16</span>
       </div>
 
-      <!-- 3D Interactive Flip Card -->
-      <div id="flashcard-container" class="w-full max-w-xl mx-auto space-y-4">
-        <div id="active-flashcard" onclick="flipCurrentCard()" class="flip-card cursor-pointer w-full min-h-[220px] rounded-3xl relative">
-          <div class="flip-card-inner w-full min-h-[220px] rounded-3xl relative">
+      <!-- Deck Filter Pills -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span class="font-medium text-slate-300">Select Subject Deck:</span>
+          <span class="text-[11px] font-mono text-indigo-300" id="flashcard-counter-badge">Cards</span>
+        </div>
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar text-xs font-semibold">
+          <button onclick="filterFlashcards('all')" id="deck-btn-all" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-indigo-600 text-white shadow transition">🌟 All Decks</button>
+          <button onclick="filterFlashcards('blackbook_ows')" id="deck-btn-blackbook_ows" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">📚 Blackbook OWS</button>
+          <button onclick="filterFlashcards('blackbook_idioms')" id="deck-btn-blackbook_idioms" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">🗣️ Blackbook Idioms</button>
+          <button onclick="filterFlashcards('blackbook_vocab')" id="deck-btn-blackbook_vocab" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">📝 Blackbook Vocab</button>
+          <button onclick="filterFlashcards('parmar_polity')" id="deck-btn-parmar_polity" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">⚖️ Parmar Polity</button>
+          <button onclick="filterFlashcards('parmar_history')" id="deck-btn-parmar_history" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">🏛️ Parmar History</button>
+          <button onclick="filterFlashcards('parmar_static')" id="deck-btn-parmar_static" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">🎭 Parmar Static GK</button>
+          <button onclick="filterFlashcards('parmar_science')" id="deck-btn-parmar_science" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">🔬 General Science</button>
+          <button onclick="filterFlashcards('maths_king')" id="deck-btn-maths_king" class="deck-filter-btn whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition">📐 Maths King</button>
+        </div>
+      </div>
+
+      <!-- CONTAINER 1: 3D Flip Card View -->
+      <div id="flashcard-flip-view" class="w-full max-w-xl mx-auto space-y-4">
+        <!-- Flip Card Navigation Bar -->
+        <div class="flex items-center justify-between px-1 text-xs">
+          <button onclick="prevCard()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium active:scale-95 transition flex items-center space-x-1">
+            <span>◀</span> <span>Prev</span>
+          </button>
+          <div class="flex items-center space-x-2">
+            <button onclick="speakCurrentCard()" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 font-medium active:scale-95 transition flex items-center space-x-1">
+              <span>🔊</span> <span>Listen</span>
+            </button>
+            <button onclick="flipCurrentCard()" class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-medium active:scale-95 transition flex items-center space-x-1">
+              <span>🔄</span> <span>Flip</span>
+            </button>
+          </div>
+          <button onclick="nextCard()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium active:scale-95 transition flex items-center space-x-1">
+            <span>Next</span> <span>▶</span>
+          </button>
+        </div>
+
+        <div id="active-flashcard" onclick="flipCurrentCard()" class="flip-card cursor-pointer w-full min-h-[240px] rounded-3xl relative">
+          <div class="flip-card-inner w-full min-h-[240px] rounded-3xl relative">
             
             <!-- Front Face -->
             <div class="flip-card-front absolute inset-0 w-full h-full rounded-3xl glass-card p-6 flex flex-col justify-between border-slate-700/80 shadow-2xl">
               <div class="flex items-center justify-between text-xs">
                 <span id="fc-deck-tag" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/30">Deck</span>
-                <span class="text-slate-400 text-[11px]">Tap card to reveal answer 🔄</span>
+                <span class="text-slate-400 text-[11px]">Tap card or Flip button 🔄</span>
               </div>
               <div class="my-auto py-4 text-center">
-                <h3 id="fc-front-text" class="text-lg sm:text-xl font-bold text-white leading-relaxed">Loading card...</h3>
+                <h3 id="fc-front-text" class="text-base sm:text-lg font-bold text-white leading-relaxed">Loading card...</h3>
               </div>
-              <div class="text-center text-[11px] text-slate-400">
-                Front (Question / Prompt)
+              <div class="flex items-center justify-between text-[11px] text-slate-400">
+                <span>Front (Question / Concept)</span>
+                <span id="fc-progress-counter" class="text-indigo-400 font-mono">1 / 98</span>
               </div>
             </div>
 
             <!-- Back Face -->
             <div class="flip-card-back absolute inset-0 w-full h-full rounded-3xl glass-card-accent p-6 flex flex-col justify-between border-indigo-500/40 shadow-2xl bg-slate-900">
               <div class="flex items-center justify-between text-xs">
-                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30">Explanation</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30">Explanation & Notes</span>
                 <span class="text-slate-400 text-[11px]">SM-2 Spaced Repetition</span>
               </div>
-              <div class="my-auto py-3 text-slate-100 text-xs sm:text-sm whitespace-pre-line leading-relaxed" id="fc-back-text">
+              <div class="my-auto py-3 text-slate-100 text-xs sm:text-sm whitespace-pre-line leading-relaxed max-h-[160px] overflow-y-auto" id="fc-back-text">
                 Answer text
               </div>
               <div class="text-center text-[11px] text-indigo-300">
@@ -442,6 +483,29 @@
             <span>Easy</span>
             <span class="text-[10px] text-emerald-400 font-normal">14 Days</span>
           </button>
+        </div>
+      </div>
+
+      <!-- CONTAINER 2: Pocket Reader Mode (Continuous Scroll Revision) -->
+      <div id="flashcard-reader-view" class="hidden space-y-4">
+        <!-- Search & Quick Control Bar -->
+        <div class="glass-card rounded-2xl p-4 border-indigo-500/30 space-y-3">
+          <div class="relative">
+            <input type="text" id="reader-search-input" oninput="handleReaderSearch()" placeholder="Search in cards: 'Misanthrope', 'Writs', '1857', 'Incenter', 'Vitamin'..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-indigo-400 placeholder-slate-500">
+          </div>
+          <div class="flex items-center justify-between text-xs pt-1">
+            <span class="text-slate-400" id="reader-count-badge">Showing 98 cards</span>
+            <div class="flex items-center space-x-2">
+              <button onclick="toggleAllReaderAnswers(true)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">👁️ Reveal All</button>
+              <button onclick="toggleAllReaderAnswers(false)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">🙈 Hide All</button>
+              <button onclick="shuffleReaderCards()" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-[11px] font-medium transition">🔀 Shuffle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Cards List -->
+        <div id="reader-cards-list" class="space-y-3">
+          <!-- Rendered dynamically via JS -->
         </div>
       </div>
 
@@ -847,6 +911,10 @@
     let currentSyllabusFilter = 'quant';
     let currentFlashcardDeck = 'all';
     let currentFlashcardIndex = 0;
+    let currentFlashcardMode = 'flip';
+    let readerSearchQuery = '';
+    let readerAnswersHidden = false;
+    let readerShuffledCards = null;
     let selectedOfficeHoursVal = 1.5;
 
     function switchTab(tabId) {
@@ -881,7 +949,10 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabId === 'syllabus') renderSyllabus();
-      if (tabId === 'flashcards') renderFlashcardDeck();
+      if (tabId === 'flashcards') {
+        if (currentFlashcardMode === 'reader') renderReaderDeck();
+        else renderFlashcardDeck();
+      }
       if (tabId === 'codex') renderCodexList();
       if (tabId === 'mocks') { renderScoreDeltaBridge(); renderMocks(); }
       if (tabId === 'mistakes') renderMistakes();
@@ -1284,41 +1355,126 @@
       }
     }
 
-    // Flashcard Render & Interaction
+    // Flashcard & Pocket Reader Mode Controller
+    function getDeckFriendlyName(deck) {
+      const map = {
+        'all': 'All Decks',
+        'blackbook_ows': 'Blackbook OWS',
+        'blackbook_idioms': 'Blackbook Idioms',
+        'blackbook_vocab': 'Blackbook Vocab',
+        'parmar_polity': 'Parmar Polity',
+        'parmar_history': 'Parmar History',
+        'parmar_static': 'Parmar Static GK',
+        'parmar_science': 'General Science',
+        'maths_king': 'Maths King Shortcuts'
+      };
+      return map[deck] || deck;
+    }
+
+    function getFilteredFlashcards() {
+      if (!appState || !appState.flashcards) return [];
+      return appState.flashcards.filter(c => {
+        if (!currentFlashcardDeck || currentFlashcardDeck === 'all') return true;
+        if (currentFlashcardDeck === 'blackbook') return c.deck.startsWith('blackbook');
+        if (currentFlashcardDeck === 'parmar_gk') return c.deck.startsWith('parmar');
+        return c.deck === currentFlashcardDeck;
+      });
+    }
+
+    function setFlashcardMode(mode) {
+      currentFlashcardMode = mode;
+      const flipView = document.getElementById('flashcard-flip-view');
+      const readerView = document.getElementById('flashcard-reader-view');
+      const btnFlip = document.getElementById('fc-mode-btn-flip');
+      const btnReader = document.getElementById('fc-mode-btn-reader');
+
+      if (mode === 'reader') {
+        if (flipView) flipView.classList.add('hidden');
+        if (readerView) readerView.classList.remove('hidden');
+        if (btnReader) {
+          btnReader.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+        }
+        if (btnFlip) {
+          btnFlip.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-slate-800 text-slate-400 hover:text-white';
+        }
+        renderReaderDeck();
+      } else {
+        if (readerView) readerView.classList.add('hidden');
+        if (flipView) flipView.classList.remove('hidden');
+        if (btnFlip) {
+          btnFlip.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+        }
+        if (btnReader) {
+          btnReader.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-slate-800 text-slate-400 hover:text-white';
+        }
+        renderFlashcardDeck();
+      }
+    }
+
     function filterFlashcards(deck) {
       currentFlashcardDeck = deck;
       currentFlashcardIndex = 0;
+      readerShuffledCards = null;
       document.querySelectorAll('.deck-filter-btn').forEach(btn => {
-        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
         btn.classList.add('bg-slate-800', 'text-slate-400');
       });
       const activeBtn = document.getElementById(`deck-btn-${deck}`);
       if (activeBtn) {
-        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow');
         activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
       }
       renderFlashcardDeck();
+      if (currentFlashcardMode === 'reader') renderReaderDeck();
+    }
+
+    function prevCard() {
+      const cards = getFilteredFlashcards();
+      if (cards.length === 0) return;
+      currentFlashcardIndex = (currentFlashcardIndex - 1 + cards.length) % cards.length;
+      renderFlashcardDeck();
+    }
+
+    function nextCard() {
+      const cards = getFilteredFlashcards();
+      if (cards.length === 0) return;
+      currentFlashcardIndex = (currentFlashcardIndex + 1) % cards.length;
+      renderFlashcardDeck();
+    }
+
+    function speakCurrentCard() {
+      const cards = getFilteredFlashcards();
+      if (cards.length === 0) return;
+      const card = cards[currentFlashcardIndex % cards.length];
+      if (typeof speakSingleCard === 'function') speakSingleCard(card.id);
     }
 
     function renderFlashcardDeck() {
-      const cards = appState.flashcards.filter(c => currentFlashcardDeck === 'all' || c.deck === currentFlashcardDeck);
+      const cards = getFilteredFlashcards();
       const cardEl = document.getElementById('active-flashcard');
       if (cardEl) cardEl.classList.remove('flipped');
 
+      const counterBadge = document.getElementById('flashcard-counter-badge');
+      const progressCounter = document.getElementById('fc-progress-counter');
+
       if (cards.length === 0) {
         document.getElementById('fc-front-text').innerText = "🎉 All caught up in this deck!";
-        document.getElementById('fc-back-text').innerText = "No due flashcards right now. Great job!";
-        document.getElementById('flashcard-counter-badge').innerText = "0 Cards";
+        document.getElementById('fc-back-text').innerText = "No due flashcards right now. Select another deck or check back later.";
+        if (counterBadge) counterBadge.innerText = "0 Cards";
+        if (progressCounter) progressCounter.innerText = "0 / 0";
         return;
       }
 
       const safeIndex = currentFlashcardIndex % cards.length;
       const card = cards[safeIndex];
 
-      document.getElementById('fc-deck-tag').innerText = card.deck === 'blackbook' ? 'Blackbook Vocab' : card.deck === 'parmar_gk' ? 'Parmar Static GK' : 'Maths King';
+      document.getElementById('fc-deck-tag').innerText = getDeckFriendlyName(card.deck);
       document.getElementById('fc-front-text').innerText = card.front;
       document.getElementById('fc-back-text').innerText = card.back;
-      document.getElementById('flashcard-counter-badge').innerText = `Card ${safeIndex + 1} of ${cards.length}`;
+      
+      const countText = `Card ${safeIndex + 1} of ${cards.length}`;
+      if (counterBadge) counterBadge.innerText = countText;
+      if (progressCounter) progressCounter.innerText = `${safeIndex + 1} / ${cards.length}`;
     }
 
     function flipCurrentCard() {
@@ -1327,12 +1483,115 @@
     }
 
     function handleRateCard(grade) {
-      const cards = appState.flashcards.filter(c => currentFlashcardDeck === 'all' || c.deck === currentFlashcardDeck);
+      const cards = getFilteredFlashcards();
       if (cards.length === 0) return;
       const card = cards[currentFlashcardIndex % cards.length];
       gradeFlashcard(card.id, grade);
       currentFlashcardIndex++;
       renderFlashcardDeck();
+    }
+
+    // Pocket Reader Mode Handlers
+    function handleReaderSearch() {
+      const input = document.getElementById('reader-search-input');
+      readerSearchQuery = input ? input.value.toLowerCase().trim() : '';
+      renderReaderDeck();
+    }
+
+    function toggleAllReaderAnswers(reveal) {
+      readerAnswersHidden = !reveal;
+      document.querySelectorAll('.reader-answer-box').forEach(el => {
+        if (reveal) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+      document.querySelectorAll('.reader-reveal-btn').forEach(btn => {
+        btn.innerText = reveal ? '🙈 Hide' : '👁️ Answer';
+      });
+    }
+
+    function toggleReaderCard(cardId) {
+      const ansEl = document.getElementById(`reader-ans-${cardId}`);
+      const btn = document.getElementById(`reader-btn-${cardId}`);
+      if (!ansEl) return;
+      const isHidden = ansEl.classList.contains('hidden');
+      if (isHidden) {
+        ansEl.classList.remove('hidden');
+        if (btn) btn.innerText = '🙈 Hide';
+      } else {
+        ansEl.classList.add('hidden');
+        if (btn) btn.innerText = '👁️ Answer';
+      }
+    }
+
+    function shuffleReaderCards() {
+      const baseCards = getFilteredFlashcards();
+      readerShuffledCards = [...baseCards].sort(() => Math.random() - 0.5);
+      renderReaderDeck();
+      showToast("🔀 Cards shuffled for active recall!", "info");
+    }
+
+    function renderReaderDeck() {
+      const container = document.getElementById('reader-cards-list');
+      if (!container) return;
+
+      let cards = readerShuffledCards || getFilteredFlashcards();
+
+      if (readerSearchQuery) {
+        cards = cards.filter(c => 
+          c.front.toLowerCase().includes(readerSearchQuery) ||
+          c.back.toLowerCase().includes(readerSearchQuery) ||
+          (c.category && c.category.toLowerCase().includes(readerSearchQuery)) ||
+          c.deck.toLowerCase().includes(readerSearchQuery)
+        );
+      }
+
+      const countBadge = document.getElementById('reader-count-badge');
+      if (countBadge) countBadge.innerText = `Showing ${cards.length} cards`;
+
+      if (cards.length === 0) {
+        container.innerHTML = `
+          <div class="glass-card rounded-2xl p-6 text-center text-slate-400 space-y-2">
+            <p class="text-sm">🔍 No flashcards match your current filter or search query.</p>
+            <p class="text-xs text-slate-500">Try searching for root words like 'somnus', articles like '32', or formulas like 'installments'.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = cards.map((c, idx) => {
+        const isHidden = readerAnswersHidden;
+        const deckLabel = getDeckFriendlyName(c.deck);
+        return `
+          <div class="glass-card rounded-2xl p-4 border border-slate-700/60 hover:border-indigo-500/40 transition space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                <span class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium text-[10px] border border-indigo-500/30">${deckLabel}</span>
+                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono text-[10px]">${c.category || 'Concept'}</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <button onclick="speakSingleCard('${c.id}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] flex items-center space-x-1 transition" title="Listen to this card">
+                  <span>🔊</span>
+                </button>
+                <button id="reader-btn-${c.id}" onclick="toggleReaderCard('${c.id}')" class="reader-reveal-btn px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">
+                  ${isHidden ? '👁️ Answer' : '🙈 Hide'}
+                </button>
+              </div>
+            </div>
+
+            <!-- Front Question -->
+            <div class="pt-1">
+              <h4 class="text-sm font-bold text-white leading-relaxed">
+                <span class="text-indigo-400 font-mono text-xs mr-1">#${idx + 1}</span> ${c.front}
+              </h4>
+            </div>
+
+            <!-- Back Answer / Explanation -->
+            <div id="reader-ans-${c.id}" class="reader-answer-box ${isHidden ? 'hidden' : ''} bg-slate-900/95 border border-indigo-500/30 rounded-xl p-3.5 text-xs text-slate-200 whitespace-pre-line leading-relaxed shadow-inner">
+              ${c.back}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     // Maths King Formula Codex
