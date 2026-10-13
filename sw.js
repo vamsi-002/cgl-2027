@@ -1,5 +1,5 @@
 // Service Worker for Vamsi CGL 2027 Tracker
-const CACHE_NAME = 'vamsi-cgl-v6';
+const CACHE_NAME = 'vamsi-cgl-v7';
 const ASSETS = [
   './',
   './index.html',

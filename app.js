@@ -1233,3 +1233,735 @@ function handleCustomDeckImport(event) {
   reader.readAsText(file);
 }
 
+// ==========================================================
+// 10. MORNING QUANT SPEED DOJO & "LEARN FIRST" ACADEMY
+// ==========================================================
+let currentDojoMainTab = 'learn'; // 'learn' | 'drill' | 'pacer' | 'codex'
+let currentLearnSubTab = 'tables'; // 'tables' | 'squares' | 'cubes' | 'fractions' | 'triplets'
+let learnSelfTestMode = false;
+
+const SSC_FRACTIONS_DATA = [
+  { frac: "1/2", pct: "50%", dec: "0.50", derived: "3/2 = 150%" },
+  { frac: "1/3", pct: "33.33%", dec: "33 1/3%", derived: "2/3 = 66.66%" },
+  { frac: "1/4", pct: "25%", dec: "0.25", derived: "3/4 = 75%" },
+  { frac: "1/5", pct: "20%", dec: "0.20", derived: "2/5 = 40%, 3/5 = 60%, 4/5 = 80%" },
+  { frac: "1/6", pct: "16.66%", dec: "16 2/3%", derived: "5/6 = 83.33% (Very Frequent!)" },
+  { frac: "1/7", pct: "14.28%", dec: "14 2/7%", derived: "2/7 = 28.57%, 3/7 = 42.85%, 4/7 = 57.14%, 5/7 = 71.42%" },
+  { frac: "1/8", pct: "12.5%", dec: "12 1/2%", derived: "3/8 = 37.5%, 5/8 = 62.5%, 7/8 = 87.5% (Must Memorize!)" },
+  { frac: "1/9", pct: "11.11%", dec: "11 1/9%", derived: "2/9 = 22.22%, 4/9 = 44.44%, 5/9 = 55.55%, 7/9 = 77.77%" },
+  { frac: "1/11", pct: "9.09%", dec: "9 1/11%", derived: "2/11 = 18.18%, 3/11 = 27.27%, 4/11 = 36.36%, 5/11 = 45.45%" },
+  { frac: "1/12", pct: "8.33%", dec: "8 1/3%", derived: "5/12 = 41.66%, 7/12 = 58.33%, 11/12 = 91.66%" },
+  { frac: "1/13", pct: "7.69%", dec: "7 9/13%", derived: "2/13 = 15.38%" },
+  { frac: "1/14", pct: "7.14%", dec: "7 1/7%", derived: "3/14 = 21.42%" },
+  { frac: "1/15", pct: "6.66%", dec: "6 2/3%", derived: "2/15 = 13.33%, 4/15 = 26.66%, 7/15 = 46.66%" },
+  { frac: "1/16", pct: "6.25%", dec: "6 1/4%", derived: "3/16 = 18.75%, 5/16 = 31.25%, 7/16 = 43.75%" },
+  { frac: "1/17", pct: "5.88%", dec: "5 15/17%", derived: "Used in tricky Profit/Loss questions" },
+  { frac: "1/18", pct: "5.55%", dec: "5 5/9%", derived: "5/18 = 27.77%" },
+  { frac: "1/19", pct: "5.26%", dec: "5 5/19%", derived: "2/19 = 10.52%" },
+  { frac: "1/20", pct: "5%", dec: "0.05", derived: "3/20 = 15%, 7/20 = 35%, 9/20 = 45%" },
+  { frac: "1/24", pct: "4.16%", dec: "4 1/6%", derived: "5/24 = 20.83%" },
+  { frac: "1/25", pct: "4%", dec: "0.04", derived: "3/25 = 12%, 7/25 = 28%" },
+  { frac: "1/40", pct: "2.5%", dec: "2 1/2%", derived: "3/40 = 7.5%" }
+];
+
+const SSC_TRIPLETS_DATA = [
+  { a: 3, b: 4, c: 5, note: "Multiples: (6,8,10), (9,12,15), (12,16,20), (15,20,25), (21,28,35)" },
+  { a: 5, b: 12, c: 13, note: "Multiples: (10,24,26), (15,36,39), (20,48,52)" },
+  { a: 7, b: 24, c: 25, note: "Multiples: (14,48,50), (21,72,75) — Huge favourite in Circle Chords & Mensuration!" },
+  { a: 8, b: 15, c: 17, note: "Multiples: (16,30,34), (24,45,51)" },
+  { a: 9, b: 40, c: 41, note: "Multiples: (18,80,82)" },
+  { a: 11, b: 60, c: 61, note: "Odd number pattern: 11² = 121 = 60 + 61" },
+  { a: 12, b: 35, c: 37, note: "Very frequent in Rhombus diagonals & Trigonometry!" },
+  { a: 13, b: 84, c: 85, note: "13² = 169 = 84 + 85" },
+  { a: 16, b: 63, c: 65, note: "Asked in Tier-2 Geometry & Trig" },
+  { a: 20, b: 21, c: 29, note: "Classic near-isosceles right triangle!" },
+  { a: 28, b: 45, c: 53, note: "Tier-2 favourite" },
+  { a: 33, b: 56, c: 65, note: "Advanced Tier-2 triplet" },
+  { a: 36, b: 77, c: 85, note: "Advanced Tier-2 triplet" },
+  { a: 39, b: 80, c: 89, note: "Advanced Tier-2 triplet" }
+];
+
+const SSC_CI_RATES = [
+  { rate: "4%", yr2: "8.16%", yr3: "12.4864%", yr4: "16.98%" },
+  { rate: "5%", yr2: "10.25%", yr3: "15.7625%", yr4: "21.55%" },
+  { rate: "6%", yr2: "12.36%", yr3: "19.1016%", yr4: "26.24%" },
+  { rate: "8%", yr2: "16.64%", yr3: "25.9712%", yr4: "36.04%" },
+  { rate: "10%", yr2: "21.00%", yr3: "33.10%", yr4: "46.41% (Golden Number!)" },
+  { rate: "12%", yr2: "25.44%", yr3: "40.4928%", yr4: "57.35%" },
+  { rate: "15%", yr2: "32.25%", yr3: "52.0875%", yr4: "74.90%" },
+  { rate: "20%", yr2: "44.00%", yr3: "72.80%", yr4: "107.36%" }
+];
+
+function openMorningDojo(targetTab = 'learn') {
+  if (typeof switchTab === 'function') switchTab('codex');
+  switchDojoMainTab(targetTab);
+}
+
+function switchDojoMainTab(tab) {
+  currentDojoMainTab = tab;
+  ['learn', 'drill', 'pacer', 'codex'].forEach(t => {
+    const view = document.getElementById(`dojo-view-${t}`);
+    const btn = document.getElementById(`dojo-tab-btn-${t}`);
+    if (view) {
+      if (t === tab) view.classList.remove('hidden');
+      else view.classList.add('hidden');
+    }
+    if (btn) {
+      if (t === tab) {
+        btn.className = "flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20";
+      } else {
+        btn.className = "flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 bg-slate-800 text-slate-400 hover:text-white";
+      }
+    }
+  });
+  if (tab === 'learn') renderLearnVault();
+  if (tab === 'drill') updateDrillStatsUI();
+  if (tab === 'codex' && typeof renderCodexList === 'function') renderCodexList();
+}
+
+function switchLearnSubTab(subTab) {
+  currentLearnSubTab = subTab;
+  ['tables', 'squares', 'cubes', 'fractions', 'triplets'].forEach(st => {
+    const btn = document.getElementById(`learn-sub-btn-${st}`);
+    if (btn) {
+      if (st === subTab) {
+        btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow transition whitespace-nowrap";
+      } else {
+        btn.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap";
+      }
+    }
+  });
+  renderLearnVault();
+}
+
+function toggleLearnSelfTest() {
+  learnSelfTestMode = !learnSelfTestMode;
+  const btn = document.getElementById('btn-learn-selftest');
+  if (btn) {
+    if (learnSelfTestMode) {
+      btn.innerHTML = `<span>👁️</span><span>Show All Values</span>`;
+      btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow transition flex items-center space-x-1";
+    } else {
+      btn.innerHTML = `<span>🙈</span><span>Hide Answers (Self-Test)</span>`;
+      btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-slate-700 transition flex items-center space-x-1";
+    }
+  }
+  renderLearnVault();
+}
+
+function speakTableAloud(n) {
+  if (!('speechSynthesis' in window)) {
+    showToast("❌ Speech synthesis not supported.", "error");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  let text = `Table of ${n}. `;
+  for (let i = 1; i <= 10; i++) {
+    text += `${n} times ${i} is ${n * i}. `;
+  }
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.92;
+  window.speechSynthesis.speak(utt);
+  showToast(`🔊 Reading Table of ${n} aloud...`, "info");
+}
+
+function renderLearnVault() {
+  const container = document.getElementById('learn-vault-content');
+  if (!container) return;
+
+  const valSpan = (ans) => learnSelfTestMode
+    ? `<span onclick="this.innerText='${ans}'; this.className='text-emerald-400 font-bold'" class="cursor-pointer px-2 py-0.5 rounded bg-slate-800 text-slate-500 hover:text-slate-300 border border-slate-700 text-[11px] select-none" title="Tap to reveal">? Tap</span>`
+    : `<span class="text-amber-300 font-bold">${ans}</span>`;
+
+  if (currentLearnSubTab === 'tables') {
+    const primes = [13, 17, 19, 23, 29];
+    const others = [12, 14, 15, 16, 18, 21, 22, 24, 25, 26, 27, 28, 30];
+
+    const renderTableCard = (n, isPrime) => {
+      let rows = '';
+      for (let i = 2; i <= 10; i++) {
+        const highlight = (i >= 6 && i <= 9) ? 'bg-slate-900/90 border-l-2 border-amber-500/60 pl-2' : '';
+        rows += `
+          <div class="flex items-center justify-between py-1 px-1.5 rounded ${highlight} text-xs font-mono">
+            <span class="text-slate-300">${n} × ${i} =</span>
+            ${valSpan(n * i)}
+          </div>
+        `;
+      }
+      return `
+        <div class="glass-card rounded-2xl p-3.5 border ${isPrime ? 'border-amber-500/50 bg-amber-500/5' : 'border-slate-800'} space-y-2">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-sm font-bold ${isPrime ? 'text-amber-300' : 'text-indigo-300'}">Table of ${n}</span>
+              ${isPrime ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">🔥 SSC Prime</span>` : ''}
+            </div>
+            <button onclick="speakTableAloud(${n})" class="text-xs px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300" title="Listen to Table of ${n}">🔊</button>
+          </div>
+          <div class="space-y-0.5">
+            ${rows}
+          </div>
+        </div>
+      `;
+    };
+
+    container.innerHTML = `
+      <div class="space-y-4">
+        <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-slate-200 space-y-1">
+          <div class="font-bold text-amber-300 flex items-center gap-1.5">🎯 How to Master Tables (Focus on ×6, ×7, ×8, ×9)</div>
+          <p class="text-slate-300 leading-relaxed">You already know ×2, ×5, and ×10. In SSC CGL, 90% of calculation traps happen at <strong>×6, ×7, ×8, and ×9 of Prime Numbers (13, 17, 19, 23, 29)</strong>—highlighted below. Toggle <strong>"Hide Answers"</strong> above and tap each row to test your memory!</p>
+        </div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400">🔥 Priority 1: The 5 Golden Prime Tables (13, 17, 19, 23, 29)</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          ${primes.map(n => renderTableCard(n, true)).join('')}
+        </div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 pt-2">🔢 Priority 2: Standard Tables (12 to 30)</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          ${others.map(n => renderTableCard(n, false)).join('')}
+        </div>
+      </div>
+    `;
+  } else if (currentLearnSubTab === 'squares') {
+    const renderSquareGroup = (start, end, title) => {
+      let items = '';
+      for (let n = start; n <= end; n++) {
+        items += `
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono">
+            <span class="text-slate-300">${n}² =</span>
+            ${valSpan(n * n)}
+          </div>
+        `;
+      }
+      return `
+        <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-2.5">
+          <h5 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">${title}</h5>
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            ${items}
+          </div>
+        </div>
+      `;
+    };
+
+    container.innerHTML = `
+      <div class="space-y-4">
+        <!-- 3-Second Mental Square Tricks -->
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-amber-500 space-y-2.5 text-xs">
+          <h4 class="font-bold text-amber-300 text-sm">⚡ 3-Second Mental Square Shortcuts (Never Multiply Manually!)</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+              <div class="font-bold text-emerald-300">1. Numbers Ending in 5 (e.g., 35², 65²)</div>
+              <p class="text-slate-300">Multiply first digit <strong>N × (N + 1)</strong> and attach <strong>25</strong> at the end.</p>
+              <p class="font-mono text-amber-200 text-[11px]">• 35² ➔ (3×4) | 25 = <strong>1225</strong><br>• 75² ➔ (7×8) | 25 = <strong>5625</strong></p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+              <div class="font-bold text-indigo-300">2. Base 50 Method (35 to 65)</div>
+              <p class="text-slate-300">Find difference <strong>d</strong> from 50. Answer = <strong>(25 ± d) | d²</strong> (2 digits).</p>
+              <p class="font-mono text-amber-200 text-[11px]">• 46² (d = -4) ➔ (25-4) | 4² = <strong>2116</strong><br>• 56² (d = +6) ➔ (25+6) | 6² = <strong>3136</strong></p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+              <div class="font-bold text-purple-300">3. Base 100 Method (85 to 115)</div>
+              <p class="text-slate-300">Find difference <strong>d</strong> from 100. Answer = <strong>(Number ± d) | d²</strong>.</p>
+              <p class="font-mono text-amber-200 text-[11px]">• 94² (d = -6) ➔ (94-6) | 6² = <strong>8836</strong><br>• 108² (d = +8) ➔ (108+8) | 8² = <strong>11664</strong></p>
+            </div>
+          </div>
+        </div>
+        ${renderSquareGroup(1, 20, "Level 1: Squares 1² to 20² (Foundation)")}
+        ${renderSquareGroup(21, 40, "Level 2: Squares 21² to 40² (High-Yield Exam Zone)")}
+        ${renderSquareGroup(41, 60, "Level 3: Squares 41² to 60² (Use Base-50 Trick!)")}
+      </div>
+    `;
+  } else if (currentLearnSubTab === 'cubes') {
+    let cubeItems = '';
+    for (let n = 1; n <= 30; n++) {
+      cubeItems += `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border ${n <= 15 ? 'border-amber-500/30' : 'border-slate-800'} text-xs font-mono">
+          <span class="text-slate-300">${n}³ =</span>
+          ${valSpan(n * n * n)}
+        </div>
+      `;
+    }
+    container.innerHTML = `
+      <div class="space-y-4">
+        <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">³ Cubes 1³ to 30³ (Essential for CI, Mensuration & Algebra)</h4>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            ${cubeItems}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-2 text-xs">
+            <h5 class="font-bold text-indigo-300 uppercase">⚡ Higher Powers of 2, 3, 5, 6, 7</h5>
+            <div class="space-y-1.5 font-mono text-slate-300">
+              <div class="p-2 rounded bg-slate-900"><strong>Powers of 2:</strong> 2⁵=32, 2⁶=64, 2⁷=128, 2⁸=256, 2⁹=512, 2¹⁰=<span class="text-amber-300">1024</span></div>
+              <div class="p-2 rounded bg-slate-900"><strong>Powers of 3:</strong> 3⁴=81, 3⁵=<span class="text-amber-300">243</span>, 3⁶=<span class="text-amber-300">729</span>, 3⁷=2187</div>
+              <div class="p-2 rounded bg-slate-900"><strong>Powers of 5:</strong> 5³=125, 5⁴=<span class="text-amber-300">625</span>, 5⁵=<span class="text-amber-300">3125</span>, 5⁶=15625</div>
+              <div class="p-2 rounded bg-slate-900"><strong>Powers of 6 & 7:</strong> 6³=216, 6⁴=<span class="text-amber-300">1296</span> | 7³=343, 7⁴=<span class="text-amber-300">2401</span></div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-2 text-xs">
+            <h5 class="font-bold text-emerald-300 uppercase">√ Standard Square Roots (For Trig & Mensuration)</h5>
+            <div class="grid grid-cols-2 gap-2 font-mono text-slate-300">
+              <div class="p-2 rounded bg-slate-900">√2 = <strong class="text-emerald-300">1.414</strong></div>
+              <div class="p-2 rounded bg-slate-900">√3 = <strong class="text-emerald-300">1.732</strong></div>
+              <div class="p-2 rounded bg-slate-900">√5 = <strong class="text-emerald-300">2.236</strong></div>
+              <div class="p-2 rounded bg-slate-900">√6 = <strong class="text-emerald-300">2.449</strong></div>
+              <div class="p-2 rounded bg-slate-900">√7 = <strong class="text-emerald-300">2.645</strong></div>
+              <div class="p-2 rounded bg-slate-900">√10 = <strong class="text-emerald-300">3.162</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (currentLearnSubTab === 'fractions') {
+    container.innerHTML = `
+      <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">% Fraction ↔ Percentage Master Table (1/2 to 1/40)</h4>
+          <span class="text-[11px] text-slate-400">Used in Percentage, Profit/Loss, SI/CI & DI</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs font-mono">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400 bg-slate-900/60">
+                <th class="p-2">Fraction</th>
+                <th class="p-2">Decimal %</th>
+                <th class="p-2">Mixed Fraction %</th>
+                <th class="p-2">🔥 High-Yield Derived Multiples</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70">
+              ${SSC_FRACTIONS_DATA.map(f => `
+                <tr class="hover:bg-slate-900/50">
+                  <td class="p-2 font-bold text-indigo-300">${f.frac}</td>
+                  <td class="p-2">${valSpan(f.pct)}</td>
+                  <td class="p-2 text-slate-300">${f.dec}</td>
+                  <td class="p-2 text-emerald-300 text-[11px]">${f.derived}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  } else if (currentLearnSubTab === 'triplets') {
+    container.innerHTML = `
+      <div class="space-y-4">
+        <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-3">
+          <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">📐 All 14 SSC Pythagorean Triplets (a² + b² = c²)</h4>
+          <p class="text-xs text-slate-400">Memorizing these saves 40 seconds in Trigonometry, Circle Chords, Mensuration (Cone slant height l² = r² + h²), and Heights & Distances.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            ${SSC_TRIPLETS_DATA.map(t => `
+              <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between">
+                <div class="flex items-center justify-between font-mono text-sm">
+                  <span class="text-white font-bold">(${t.a}, ${t.b}, ${valSpan(t.c)})</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">${t.a}² + ${t.b}² = ${t.c}²</span>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-1">${t.note}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-3">
+          <h4 class="text-xs font-bold text-emerald-300 uppercase tracking-wider">💰 Compound Interest (CI) Direct Effective Rate Table</h4>
+          <p class="text-xs text-slate-400">Never draw a 3-year CI tree for standard rates! Multiply Principal directly by these effective percentages:</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 bg-slate-900/60">
+                  <th class="p-2">Rate (R%)</th>
+                  <th class="p-2">2 Years (2R + R²/100)</th>
+                  <th class="p-2">3 Years (3R . 3R² . R³)</th>
+                  <th class="p-2">4 Years Net %</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/70">
+                ${SSC_CI_RATES.map(r => `
+                  <tr class="hover:bg-slate-900/50">
+                    <td class="p-2 font-bold text-amber-300">${r.rate}</td>
+                    <td class="p-2 text-slate-200">${valSpan(r.yr2)}</td>
+                    <td class="p-2 text-emerald-300 font-bold">${valSpan(r.yr3)}</td>
+                    <td class="p-2 text-indigo-300">${r.yr4}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ==========================================================
+// 60-SECOND RAPID-FIRE SPEED DRILL ENGINE
+// ==========================================================
+let drillActive = false;
+let drillCategory = 'primes'; // 'primes' | 'tables' | 'squares' | 'cubes' | 'fractions' | 'triplets' | 'multiply2d' | 'mixed'
+let drillTimeLeft = 60;
+let drillTimerId = null;
+let drillCorrect = 0;
+let drillTotal = 0;
+let drillStreak = 0;
+let drillCurrentQ = null;
+let drillMistakes = [];
+
+function setDrillCategory(cat) {
+  drillCategory = cat;
+  document.querySelectorAll('.drill-cat-btn').forEach(btn => {
+    if (btn.dataset.cat === cat) {
+      btn.className = "drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow transition whitespace-nowrap";
+    } else {
+      btn.className = "drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap";
+    }
+  });
+}
+
+function generateDrillQuestion(cat) {
+  const categories = ['primes', 'tables', 'squares', 'cubes', 'fractions', 'triplets', 'multiply2d'];
+  const chosenCat = cat === 'mixed' ? categories[Math.floor(Math.random() * categories.length)] : cat;
+
+  let prompt = "";
+  let answer = "";
+  let options = [];
+
+  const makeNumericOptions = (correctNum, step = 10) => {
+    const set = new Set([correctNum]);
+    const offsets = [-step, step, -2 * step, 2 * step, -1, 1, -step + 1, step - 1, 10, -10, 2, -2];
+    while (set.size < 4) {
+      const off = offsets[Math.floor(Math.random() * offsets.length)];
+      const cand = correctNum + off;
+      if (cand > 0 && cand !== correctNum) set.add(cand);
+    }
+    return Array.from(set).sort(() => Math.random() - 0.5).map(String);
+  };
+
+  if (chosenCat === 'primes') {
+    const primes = [13, 17, 19, 23, 29];
+    const p = primes[Math.floor(Math.random() * primes.length)];
+    const m = Math.floor(Math.random() * 6) + 4; // 4 to 9
+    const ans = p * m;
+    prompt = `${p} × ${m} = ?`;
+    answer = String(ans);
+    options = makeNumericOptions(ans, p);
+  } else if (chosenCat === 'tables') {
+    const n = Math.floor(Math.random() * 19) + 12; // 12 to 30
+    const m = Math.floor(Math.random() * 7) + 3; // 3 to 9
+    const ans = n * m;
+    prompt = `${n} × ${m} = ?`;
+    answer = String(ans);
+    options = makeNumericOptions(ans, n);
+  } else if (chosenCat === 'squares') {
+    const n = Math.floor(Math.random() * 45) + 11; // 11 to 55
+    const ans = n * n;
+    prompt = `${n}² = ?`;
+    answer = String(ans);
+    options = makeNumericOptions(ans, 100);
+  } else if (chosenCat === 'cubes') {
+    const n = Math.floor(Math.random() * 20) + 6; // 6 to 25
+    const ans = n * n * n;
+    prompt = `${n}³ = ?`;
+    answer = String(ans);
+    options = makeNumericOptions(ans, 100);
+  } else if (chosenCat === 'fractions') {
+    const pool = [
+      { q: "1/7 in % = ?", a: "14.28%" },
+      { q: "3/8 in % = ?", a: "37.5%" },
+      { q: "5/8 in % = ?", a: "62.5%" },
+      { q: "7/8 in % = ?", a: "87.5%" },
+      { q: "5/6 in % = ?", a: "83.33%" },
+      { q: "1/12 in % = ?", a: "8.33%" },
+      { q: "5/12 in % = ?", a: "41.66%" },
+      { q: "4/7 in % = ?", a: "57.14%" },
+      { q: "3/7 in % = ?", a: "42.85%" },
+      { q: "2/11 in % = ?", a: "18.18%" },
+      { q: "1/16 in % = ?", a: "6.25%" },
+      { q: "3/16 in % = ?", a: "18.75%" },
+      { q: "4/9 in % = ?", a: "44.44%" },
+      { q: "1/15 in % = ?", a: "6.66%" }
+    ];
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    prompt = item.q;
+    answer = item.a;
+    const optSet = new Set([item.a]);
+    while (optSet.size < 4) {
+      optSet.add(pool[Math.floor(Math.random() * pool.length)].a);
+    }
+    options = Array.from(optSet).sort(() => Math.random() - 0.5);
+  } else if (chosenCat === 'triplets') {
+    const t = SSC_TRIPLETS_DATA[Math.floor(Math.random() * SSC_TRIPLETS_DATA.length)];
+    const hideIdx = Math.floor(Math.random() * 2); // hide b or c
+    if (hideIdx === 0) {
+      prompt = `Triplet: (${t.a}, ?, ${t.c})`;
+      answer = String(t.b);
+      options = makeNumericOptions(t.b, 2);
+    } else {
+      prompt = `Triplet: (${t.a}, ${t.b}, ?)`;
+      answer = String(t.c);
+      options = makeNumericOptions(t.c, 2);
+    }
+  } else {
+    // 2-Digit Mental Multiply
+    const a = Math.floor(Math.random() * 35) + 15; // 15 to 49
+    const b = Math.floor(Math.random() * 15) + 12; // 12 to 26
+    const ans = a * b;
+    prompt = `${a} × ${b} = ?`;
+    answer = String(ans);
+    options = makeNumericOptions(ans, 10);
+  }
+
+  return { prompt, answer, options };
+}
+
+function startSpeedDrill() {
+  if (drillTimerId) clearInterval(drillTimerId);
+  drillActive = true;
+  drillTimeLeft = 60;
+  drillCorrect = 0;
+  drillTotal = 0;
+  drillStreak = 0;
+  drillMistakes = [];
+
+  document.getElementById('drill-idle-screen')?.classList.add('hidden');
+  document.getElementById('drill-result-screen')?.classList.add('hidden');
+  document.getElementById('drill-active-screen')?.classList.remove('hidden');
+
+  nextDrillPrompt();
+  updateDrillHUD();
+
+  drillTimerId = setInterval(() => {
+    drillTimeLeft--;
+    updateDrillHUD();
+    if (drillTimeLeft <= 0) {
+      finishSpeedDrill();
+    }
+  }, 1000);
+}
+
+function stopSpeedDrill() {
+  if (drillTimerId) clearInterval(drillTimerId);
+  drillActive = false;
+  document.getElementById('drill-active-screen')?.classList.add('hidden');
+  document.getElementById('drill-idle-screen')?.classList.remove('hidden');
+}
+
+function updateDrillHUD() {
+  const timerEl = document.getElementById('drill-timer-val');
+  const scoreEl = document.getElementById('drill-score-val');
+  const streakEl = document.getElementById('drill-streak-val');
+  if (timerEl) timerEl.innerText = `${drillTimeLeft}s`;
+  if (scoreEl) scoreEl.innerText = `${drillCorrect}`;
+  if (streakEl) streakEl.innerText = `🔥 ${drillStreak}`;
+}
+
+function nextDrillPrompt() {
+  drillCurrentQ = generateDrillQuestion(drillCategory);
+  const qEl = document.getElementById('drill-question-text');
+  const optsEl = document.getElementById('drill-options-grid');
+  const fbEl = document.getElementById('drill-feedback-banner');
+  if (fbEl) fbEl.innerHTML = '';
+  if (qEl) qEl.innerText = drillCurrentQ.prompt;
+  if (optsEl) {
+    optsEl.innerHTML = drillCurrentQ.options.map(opt => `
+      <button onclick="answerDrillQuestion('${opt}')" class="py-3.5 px-4 rounded-2xl bg-slate-800 hover:bg-indigo-600/40 border border-slate-700 hover:border-indigo-500 text-white font-mono font-bold text-base sm:text-lg active:scale-95 transition shadow-md">
+        ${opt}
+      </button>
+    `).join('');
+  }
+}
+
+function answerDrillQuestion(selected) {
+  if (!drillActive || !drillCurrentQ) return;
+  drillTotal++;
+  const fbEl = document.getElementById('drill-feedback-banner');
+
+  if (selected === drillCurrentQ.answer) {
+    drillCorrect++;
+    drillStreak++;
+    playChime("success");
+    updateDrillHUD();
+    nextDrillPrompt();
+  } else {
+    drillStreak = 0;
+    drillMistakes.push({ q: drillCurrentQ.prompt, correct: drillCurrentQ.answer, yours: selected });
+    updateDrillHUD();
+    if (fbEl) {
+      fbEl.innerHTML = `<div class="p-2 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono font-bold text-center">❌ Oops! ${drillCurrentQ.prompt.replace('?', drillCurrentQ.answer)}</div>`;
+    }
+    setTimeout(() => {
+      if (drillActive) nextDrillPrompt();
+    }, 650);
+  }
+}
+
+function finishSpeedDrill() {
+  if (drillTimerId) clearInterval(drillTimerId);
+  drillActive = false;
+
+  if (!appState.speedDojo) appState.speedDojo = { bestQPM: 0, totalDrills: 0 };
+  appState.speedDojo.totalDrills = (appState.speedDojo.totalDrills || 0) + 1;
+  if (drillCorrect > (appState.speedDojo.bestQPM || 0)) {
+    appState.speedDojo.bestQPM = drillCorrect;
+  }
+  saveState();
+  addXP(35, `Morning Speed Drill: ${drillCorrect} QPM`);
+  updateDrillStatsUI();
+
+  document.getElementById('drill-active-screen')?.classList.add('hidden');
+  const resScreen = document.getElementById('drill-result-screen');
+  if (resScreen) {
+    resScreen.classList.remove('hidden');
+    const acc = drillTotal > 0 ? Math.round((drillCorrect / drillTotal) * 100) : 0;
+    resScreen.innerHTML = `
+      <div class="glass-card-accent rounded-3xl p-6 text-center space-y-4 border border-amber-500/40">
+        <div class="text-3xl">🏆</div>
+        <h4 class="text-lg font-bold text-white">60-Second Sprint Complete!</h4>
+        <div class="grid grid-cols-3 gap-3 max-w-md mx-auto font-mono">
+          <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <div class="text-[10px] text-slate-400">SPEED (QPM)</div>
+            <div class="text-xl font-bold text-amber-400">${drillCorrect}</div>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <div class="text-[10px] text-slate-400">ACCURACY</div>
+            <div class="text-xl font-bold text-emerald-400">${acc}%</div>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <div class="text-[10px] text-slate-400">BEST RECORD</div>
+            <div class="text-xl font-bold text-indigo-400">${appState.speedDojo.bestQPM}</div>
+          </div>
+        </div>
+        ${drillMistakes.length > 0 ? `
+          <div class="text-left max-w-md mx-auto p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/30 space-y-1.5 text-xs">
+            <div class="font-bold text-rose-300">📝 Review Your Mistakes from This Sprint:</div>
+            ${drillMistakes.map(m => `<div class="font-mono text-slate-200">• ${m.q.replace('?', '')} <strong class="text-emerald-400">${m.correct}</strong> <span class="text-slate-500">(You tapped ${m.yours})</span></div>`).join('')}
+          </div>
+        ` : `<div class="text-xs text-emerald-300 font-semibold">✨ 100% Flawless Accuracy! Zero mistakes!</div>`}
+        <div class="flex justify-center space-x-3 pt-2">
+          <button onclick="startSpeedDrill()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg transition">🔄 Play Again (+35 XP)</button>
+          <button onclick="switchDojoMainTab('learn')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">📚 Revise Tables/Squares</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function updateDrillStatsUI() {
+  const best = appState?.speedDojo?.bestQPM || 0;
+  const badge1 = document.getElementById('dojo-best-qpm-badge');
+  const badge2 = document.getElementById('cockpit-best-qpm-badge');
+  if (badge1) badge1.innerText = `Best Speed: ${best} QPM`;
+  if (badge2) badge2.innerText = `Best: ${best} QPM`;
+}
+
+// ==========================================================
+// 45-SECOND PYQ BOOK PACER STOPWATCH
+// ==========================================================
+let pacerRunning = false;
+let pacerSeconds = 0;
+let pacerTimerId = null;
+let pacerLaps = [];
+
+function togglePyqPacer() {
+  if (pacerRunning) {
+    clearInterval(pacerTimerId);
+    pacerRunning = false;
+  } else {
+    pacerRunning = true;
+    pacerTimerId = setInterval(() => {
+      pacerSeconds++;
+      renderPyqPacerUI();
+    }, 1000);
+  }
+  renderPyqPacerUI();
+}
+
+function logPyqLap(status = 'solved') {
+  if (pacerSeconds === 0 && !pacerRunning) return;
+  pacerLaps.unshift({
+    qNum: pacerLaps.length + 1,
+    sec: pacerSeconds,
+    status
+  });
+  pacerSeconds = 0;
+  if (!pacerRunning) {
+    pacerRunning = true;
+    pacerTimerId = setInterval(() => {
+      pacerSeconds++;
+      renderPyqPacerUI();
+    }, 1000);
+  }
+  playChime("success");
+  renderPyqPacerUI();
+}
+
+function resetPyqPacer() {
+  if (pacerTimerId) clearInterval(pacerTimerId);
+  pacerRunning = false;
+  pacerSeconds = 0;
+  pacerLaps = [];
+  renderPyqPacerUI();
+}
+
+function renderPyqPacerUI() {
+  const timeEl = document.getElementById('pacer-time-display');
+  const zoneEl = document.getElementById('pacer-zone-badge');
+  const btnEl = document.getElementById('pacer-toggle-btn');
+  const avgEl = document.getElementById('pacer-avg-display');
+  const lapsEl = document.getElementById('pacer-laps-list');
+
+  if (timeEl) {
+    const mins = String(Math.floor(pacerSeconds / 60)).padStart(2, '0');
+    const secs = String(pacerSeconds % 60).padStart(2, '0');
+    timeEl.innerText = `${mins}:${secs}`;
+    if (pacerSeconds <= 40) timeEl.className = "text-4xl sm:text-5xl font-mono font-bold text-emerald-400";
+    else if (pacerSeconds <= 55) timeEl.className = "text-4xl sm:text-5xl font-mono font-bold text-amber-400";
+    else timeEl.className = "text-4xl sm:text-5xl font-mono font-bold text-rose-400 animate-pulse";
+  }
+
+  if (zoneEl) {
+    if (pacerSeconds <= 40) {
+      zoneEl.innerText = "🟢 Topper Speed Zone (< 40s)";
+      zoneEl.className = "text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold";
+    } else if (pacerSeconds <= 55) {
+      zoneEl.innerText = "🟡 Exam Threshold (40s – 55s)";
+      zoneEl.className = "text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold";
+    } else {
+      zoneEl.innerText = "🔴 Over 55s! Use Option Elimination / Skip!";
+      zoneEl.className = "text-xs px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold";
+    }
+  }
+
+  if (btnEl) {
+    btnEl.innerText = pacerRunning ? "⏸ Pause Timer" : "▶ Start Question Timer";
+  }
+
+  if (avgEl) {
+    if (pacerLaps.length === 0) {
+      avgEl.innerText = "0 Qs | Avg: 0s/Q";
+    } else {
+      const sum = pacerLaps.reduce((a, b) => a + b.sec, 0);
+      const avg = Math.round(sum / pacerLaps.length);
+      avgEl.innerText = `${pacerLaps.length} Qs Solved | Avg: ${avg}s / Question`;
+    }
+  }
+
+  if (lapsEl) {
+    lapsEl.innerHTML = pacerLaps.map(l => {
+      const badge = l.sec <= 40 ? '🟢 Fast' : l.sec <= 55 ? '🟡 OK' : '🔴 Slow';
+      return `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono">
+          <span class="text-slate-300 font-bold">Question #${l.qNum} (${l.status.toUpperCase()})</span>
+          <div class="flex items-center space-x-2">
+            <span class="text-white font-bold">${l.sec}s</span>
+            <span>${badge}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+

@@ -229,6 +229,32 @@
         </div>
       </div>
 
+      <!-- MORNING QUANT SPEED IGNITION BANNER (Daily 20-Min Ritual) -->
+      <div class="glass-card rounded-2xl p-3.5 sm:p-4 border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-slate-900/90 to-indigo-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+            ⚡
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="text-xs sm:text-sm font-bold text-white">Morning Quant Speed Dojo (Daily 20m Ritual)</h3>
+              <span id="cockpit-best-qpm-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono font-semibold">Best: 0 QPM</span>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-0.5">Step 1: Learn Tables (12–30), Squares (1–60), Cubes & Fractions ➔ Step 2: Run 60s Rapid-Fire Drill.</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2 w-full sm:w-auto">
+          <button onclick="openMorningDojo('learn')" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs active:scale-95 transition flex items-center justify-center space-x-1">
+            <span>📚</span>
+            <span>1. Learn First</span>
+          </button>
+          <button onclick="openMorningDojo('drill')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition flex items-center justify-center space-x-1">
+            <span>🔥</span>
+            <span>2. 60s Drill</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Alert Banners: Backlog & MVD Notification -->
       <div id="cockpit-alerts" class="space-y-3">
         <!-- Backlog Warning Drawer -->
@@ -516,27 +542,173 @@
 
     </section>
 
-    <!-- TAB: MATHS KING FORMULA CODEX -->
+    <!-- TAB: MORNING QUANT SPEED DOJO & MATHS KING CODEX -->
     <section id="view-codex" class="tab-view hidden space-y-5">
-      <div class="glass-card rounded-2xl p-4 sm:p-5 border-amber-500/30 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-          <div>
-            <h3 class="text-sm font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
-              <span>📖</span> Maths King Instant Formula Codex
-            </h3>
-            <p class="text-xs text-slate-400">Searchable formulas & shortcuts from Nikhil Pratap Singh's book.</p>
+
+      <!-- Top 4-Mode Switcher -->
+      <div class="bg-slate-900/90 border border-slate-800 p-1.5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+        <button onclick="switchDojoMainTab('learn')" id="dojo-tab-btn-learn" class="py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20">
+          <span>📚</span>
+          <span>1. Learn First</span>
+        </button>
+        <button onclick="switchDojoMainTab('drill')" id="dojo-tab-btn-drill" class="py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 bg-slate-800 text-slate-400 hover:text-white">
+          <span>🔥</span>
+          <span>2. 60s Speed Drill</span>
+        </button>
+        <button onclick="switchDojoMainTab('pacer')" id="dojo-tab-btn-pacer" class="py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 bg-slate-800 text-slate-400 hover:text-white">
+          <span>⏱️</span>
+          <span>3. 45s PYQ Pacer</span>
+        </button>
+        <button onclick="switchDojoMainTab('codex')" id="dojo-tab-btn-codex" class="py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 bg-slate-800 text-slate-400 hover:text-white">
+          <span>📖</span>
+          <span>4. Formula Codex</span>
+        </button>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- DOJO VIEW 1: LEARN FIRST (TABLES, SQUARES, CUBES, %) -->
+      <!-- ==================================================== -->
+      <div id="dojo-view-learn" class="space-y-4">
+        <div class="glass-card rounded-2xl p-4 border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+            <button onclick="switchLearnSubTab('tables')" id="learn-sub-btn-tables" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow transition whitespace-nowrap">🔢 Tables (12–30)</button>
+            <button onclick="switchLearnSubTab('squares')" id="learn-sub-btn-squares" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">² Squares (1–60)</button>
+            <button onclick="switchLearnSubTab('cubes')" id="learn-sub-btn-cubes" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">³ Cubes (1–30)</button>
+            <button onclick="switchLearnSubTab('fractions')" id="learn-sub-btn-fractions" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">% Fractions ↔ %</button>
+            <button onclick="switchLearnSubTab('triplets')" id="learn-sub-btn-triplets" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">📐 Triplets & CI</button>
           </div>
-          <span class="text-xs text-amber-400 font-mono" id="codex-count-badge">Pre-Loaded</span>
+          <button onclick="toggleLearnSelfTest()" id="btn-learn-selftest" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-slate-700 transition flex items-center justify-center space-x-1 shrink-0">
+            <span>🙈</span>
+            <span>Hide Answers (Self-Test)</span>
+          </button>
         </div>
-        <div class="relative">
-          <input type="text" id="codex-search-input" oninput="handleCodexSearch()" placeholder="Type 'Apollonius', 'Installment', 'Chord', 'Divisibility', 'Prism', 'Trig'..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-amber-400 placeholder-slate-500">
+
+        <!-- Dynamic Learn Vault Content -->
+        <div id="learn-vault-content">
+          <!-- Rendered via renderLearnVault() -->
         </div>
       </div>
 
-      <!-- Codex Formula List -->
-      <div id="codex-list-container" class="space-y-3">
-        <!-- Rendered via JS -->
+      <!-- ==================================================== -->
+      <!-- DOJO VIEW 2: 60-SECOND RAPID-FIRE SPEED DRILL GAME   -->
+      <!-- ==================================================== -->
+      <div id="dojo-view-drill" class="hidden space-y-4">
+        <div class="glass-card rounded-2xl p-4 border-amber-500/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span>🔥</span> 60-Second Morning Calculation Reflex Drill
+              </h3>
+              <p class="text-xs text-slate-400">Pick the topic you are learning today, or test everything in Mixed mode.</p>
+            </div>
+            <span id="dojo-best-qpm-badge" class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">Best Speed: 0 QPM</span>
+          </div>
+
+          <!-- Topic Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+            <button onclick="setDrillCategory('primes')" data-cat="primes" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow transition whitespace-nowrap">🔥 Prime Tables (13,17,19,23,29)</button>
+            <button onclick="setDrillCategory('tables')" data-cat="tables" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">🔢 All Tables (12–30)</button>
+            <button onclick="setDrillCategory('squares')" data-cat="squares" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">² Squares (11–55)</button>
+            <button onclick="setDrillCategory('cubes')" data-cat="cubes" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">³ Cubes (6–25)</button>
+            <button onclick="setDrillCategory('fractions')" data-cat="fractions" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">% Fractions ↔ %</button>
+            <button onclick="setDrillCategory('triplets')" data-cat="triplets" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">📐 Triplets Finder</button>
+            <button onclick="setDrillCategory('multiply2d')" data-cat="multiply2d" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">✖️ 2-Digit Mental ×</button>
+            <button onclick="setDrillCategory('mixed')" data-cat="mixed" class="drill-cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">🌟 All Mixed CGL</button>
+          </div>
+        </div>
+
+        <!-- Idle Screen -->
+        <div id="drill-idle-screen" class="glass-card-accent rounded-3xl p-8 text-center space-y-4 border border-indigo-500/30">
+          <div class="text-4xl">⚡</div>
+          <h4 class="text-lg font-bold text-white">Ready for Your 60-Second Morning Sprint?</h4>
+          <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">No pen allowed! Tap the right answer as fast as your brain can fire. Any mistake you make will be saved for review at the end of the 60 seconds.</p>
+          <button onclick="startSpeedDrill()" class="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/20 active:scale-95 transition">
+            ▶ Start 60s Rapid-Fire Drill (+35 XP)
+          </button>
+        </div>
+
+        <!-- Active Game Screen -->
+        <div id="drill-active-screen" class="hidden glass-card-accent rounded-3xl p-5 sm:p-6 border border-amber-500/40 space-y-5 max-w-xl mx-auto">
+          <div class="flex items-center justify-between text-xs font-mono border-b border-slate-800 pb-3">
+            <div class="px-3 py-1 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">⏱️ <span id="drill-timer-val">60s</span></div>
+            <div class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">Score: <span id="drill-score-val">0</span></div>
+            <div class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold" id="drill-streak-val">🔥 0</div>
+            <button onclick="stopSpeedDrill()" class="text-slate-400 hover:text-white text-xs underline">Stop</button>
+          </div>
+
+          <div class="py-6 text-center">
+            <div class="text-2xl sm:text-4xl font-mono font-bold text-white tracking-wide" id="drill-question-text">17 × 8 = ?</div>
+          </div>
+
+          <div id="drill-feedback-banner"></div>
+
+          <div id="drill-options-grid" class="grid grid-cols-2 gap-3">
+            <!-- 4 Option buttons rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="drill-result-screen" class="hidden"></div>
       </div>
+
+      <!-- ==================================================== -->
+      <!-- DOJO VIEW 3: 45-SECOND PYQ BOOK PACER STOPWATCH      -->
+      <!-- ==================================================== -->
+      <div id="dojo-view-pacer" class="hidden space-y-4">
+        <div class="glass-card-accent rounded-3xl p-6 text-center space-y-5 border border-indigo-500/30 max-w-xl mx-auto">
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-indigo-300 uppercase tracking-wider">⏱️ 45-Second Kiran PYQ / Maths King Book Pacer</h3>
+            <p class="text-xs text-slate-400">Keep this open beside your notebook while solving physical book questions. Enforce the <strong>15-Second No-Pen Rule</strong>!</p>
+          </div>
+
+          <div class="py-2 space-y-2">
+            <div id="pacer-time-display" class="text-4xl sm:text-5xl font-mono font-bold text-emerald-400">00:00</div>
+            <div>
+              <span id="pacer-zone-badge" class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">🟢 Topper Speed Zone (&lt; 40s)</span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-center gap-2.5">
+            <button onclick="togglePyqPacer()" id="pacer-toggle-btn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition">▶ Start Question Timer</button>
+            <button onclick="logPyqLap('solved')" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 active:scale-95 transition">✅ Solved — Next Question</button>
+            <button onclick="logPyqLap('skipped')" class="px-4 py-2.5 rounded-xl bg-amber-600/30 hover:bg-amber-600/40 text-amber-300 border border-amber-500/30 text-xs font-bold active:scale-95 transition">⏭️ Skipped / Stuck</button>
+            <button onclick="resetPyqPacer()" class="px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs transition">🔄 Reset</button>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-indigo-300">
+            <span>Session Stats:</span>
+            <span id="pacer-avg-display" class="font-bold">0 Qs | Avg: 0s/Q</span>
+          </div>
+
+          <div id="pacer-laps-list" class="space-y-1.5 max-h-52 overflow-y-auto text-left"></div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- DOJO VIEW 4: MATHS KING FORMULA CODEX                -->
+      <!-- ==================================================== -->
+      <div id="dojo-view-codex" class="hidden space-y-4">
+        <div class="glass-card rounded-2xl p-4 sm:p-5 border-amber-500/30 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div>
+              <h3 class="text-sm font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                <span>📖</span> Maths King Instant Formula Codex
+              </h3>
+              <p class="text-xs text-slate-400">Searchable formulas & shortcuts from Nikhil Pratap Singh's book.</p>
+            </div>
+            <span class="text-xs text-amber-400 font-mono" id="codex-count-badge">Pre-Loaded</span>
+          </div>
+          <div class="relative">
+            <input type="text" id="codex-search-input" oninput="handleCodexSearch()" placeholder="Type 'Apollonius', 'Installment', 'Chord', 'Divisibility', 'Prism', 'Trig'..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-amber-400 placeholder-slate-500">
+          </div>
+        </div>
+
+        <!-- Codex Formula List -->
+        <div id="codex-list-container" class="space-y-3">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
     </section>
 
     <!-- TAB: TESTBOOK MOCKS & SCORE DELTA BRIDGE -->
@@ -1001,7 +1173,11 @@
         if (currentFlashcardMode === 'reader') renderReaderDeck();
         else renderFlashcardDeck();
       }
-      if (tabId === 'codex') renderCodexList();
+      if (tabId === 'codex') {
+        renderLearnVault();
+        updateDrillStatsUI();
+        renderCodexList();
+      }
       if (tabId === 'mocks') { renderScoreDeltaBridge(); renderMocks(); }
       if (tabId === 'mistakes') renderMistakes();
       if (tabId === 'scratchpad') loadScratchpad();
@@ -1800,6 +1976,8 @@ ${f.formula}
       renderApp();
       loadScratchpad();
       renderFlashcardDeck();
+      renderLearnVault();
+      updateDrillStatsUI();
       renderCodexList();
       renderScoreDeltaBridge();
       updateCountdownTimer();
